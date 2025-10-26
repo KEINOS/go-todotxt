@@ -142,11 +142,13 @@ func (tasklist *TaskList) LoadFromFile(file io.Reader) error {
 //
 // Note: This will clear the current TaskList and overwrite it's contents with whatever is in the file.
 func (tasklist *TaskList) LoadFromPath(filename string) error {
+	//nolint:gosec // filename is provided by user, but LoadFromPath is a public API for loading todo.txt files
 	file, err := os.Open(filename)
 	if err != nil {
 		return errors.Wrap(err, "failed to open file: "+filename)
 	}
-	defer file.Close()
+
+	defer func() { _ = file.Close() }()
 
 	return tasklist.LoadFromFile(file)
 }
@@ -223,7 +225,8 @@ func (tasklist *TaskList) String() string {
 func (tasklist *TaskList) WriteToFile(file *os.File) error {
 	writer := bufio.NewWriter(file)
 
-	if _, err := writer.WriteString(tasklist.String()); err != nil {
+	_, err := writer.WriteString(tasklist.String())
+	if err != nil {
 		return errors.Wrap(err, "failed to write string to buffer")
 	}
 

@@ -9,6 +9,7 @@ package todo_test
 import (
 	"testing"
 
+	//nolint:depguard // external test package needs to import the module
 	"github.com/KEINOS/go-todotxt/todo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

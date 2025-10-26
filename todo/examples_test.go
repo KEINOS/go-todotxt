@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	//nolint:depguard // external test package needs to import the module
 	"github.com/KEINOS/go-todotxt/todo"
 )
 
@@ -40,7 +41,8 @@ func Example() {
 	tasks.AddTask(newTask) // append to the end of the list
 
 	// Sort tasks by priority and then by context in ascending order.
-	if err := tasks.Sort(todo.SortPriorityAsc, todo.SortContextAsc); err != nil {
+	err = tasks.Sort(todo.SortPriorityAsc, todo.SortContextAsc)
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -228,7 +230,8 @@ func ExampleTaskList_Sort() {
 	fmt.Println("Before #3:", tasks[2].Projects)
 
 	// Sort tasks by project and then priority in ascending order
-	if err := tasks.Sort(todo.SortProjectAsc, todo.SortPriorityAsc); err != nil {
+	err = tasks.Sort(todo.SortProjectAsc, todo.SortPriorityAsc)
+	if err != nil {
 		log.Fatal(err)
 	}
 

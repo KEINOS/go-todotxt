@@ -11,7 +11,7 @@ import (
 //  Tests: Constructors
 // ----------------------------------------------------------------------------
 
-//nolint:paralleltest,funlen // do not parallel to avoid race conditions
+//nolint:paralleltest // do not parallel to avoid race conditions
 func TestNewTask_default_state(t *testing.T) {
 	task := NewTask()
 
