@@ -79,7 +79,6 @@ func TestNewTask_default_state(t *testing.T) {
 		"field Completed failed to return false. the given task is not completed")
 }
 
-//nolint:funlen // function is long but leave it as is for now
 func Test_ParseTask(t *testing.T) {
 	t.Parallel()
 
@@ -693,7 +692,6 @@ func TestTask_Complete(t *testing.T) {
 	}
 }
 
-//nolint:funlen // leave it as is since it's a test
 func TestTask_Reopen(t *testing.T) {
 	t.Parallel()
 

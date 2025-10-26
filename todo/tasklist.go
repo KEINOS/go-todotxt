@@ -29,7 +29,8 @@ type TaskList []Task
 func LoadFromFile(file io.Reader) (TaskList, error) {
 	var tasklist TaskList
 
-	if err := tasklist.LoadFromFile(file); err != nil {
+	err := tasklist.LoadFromFile(file)
+	if err != nil {
 		return nil, errors.Wrap(err, "failed to load from file")
 	}
 
@@ -40,7 +41,8 @@ func LoadFromFile(file io.Reader) (TaskList, error) {
 func LoadFromPath(filename string) (TaskList, error) {
 	var tasklist TaskList
 
-	if err := tasklist.LoadFromPath(filename); err != nil {
+	err := tasklist.LoadFromPath(filename)
+	if err != nil {
 		return nil, err
 	}
 

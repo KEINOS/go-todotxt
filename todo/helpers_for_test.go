@@ -54,7 +54,7 @@ var clientMutex struct {
 func checkTaskListOrder(t *testing.T, gotList TaskList, expStrList []string) {
 	t.Helper()
 
-	assert.Equal(t, len(expStrList), len(gotList), "tasklist length mismatch")
+	assert.Len(t, gotList, len(expStrList), "tasklist length mismatch")
 
 	for i, expectTask := range expStrList {
 		actualTask := gotList[i].Task()

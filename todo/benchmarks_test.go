@@ -11,7 +11,7 @@ import (
 // ============================================================================
 
 func BenchmarkLoadFromPath(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, _ = LoadFromPath(testInputTasklist)
 	}
 }
@@ -21,7 +21,7 @@ func BenchmarkParseTask(b *testing.B) {
 
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, _ = ParseTask(s)
 	}
 }
@@ -42,7 +42,7 @@ func BenchmarkTask_String(b *testing.B) {
 
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_ = task.String()
 	}
 }
@@ -57,7 +57,7 @@ func BenchmarkTaskList_Filter(b *testing.B) {
 
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_ = testTasklist.Filter(FilterNot(FilterCompleted)).Filter(FilterByPriority("A"), FilterByPriority("B"))
 	}
 }
@@ -69,7 +69,7 @@ func BenchmarkTaskList_Sort(b *testing.B) {
 
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_ = testTasklist.Sort(SortPriorityAsc, SortCreatedDateAsc, SortTodoTextDesc)
 	}
 }
@@ -80,7 +80,7 @@ func BenchmarkTaskList_String(b *testing.B) {
 
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_ = taskList.String()
 	}
 }

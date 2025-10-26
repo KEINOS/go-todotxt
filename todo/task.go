@@ -61,7 +61,8 @@ func ParseTask(text string) (*Task, error) {
 
 	// Check for completed (has 'x ' at the beginning)
 	if completedRx.MatchString(oriText) {
-		if err := parseCompleted(oriText, task); err != nil {
+		err := parseCompleted(oriText, task)
+		if err != nil {
 			return nil, errors.Wrap(err, "failed to parse task")
 		}
 	}
@@ -73,7 +74,8 @@ func ParseTask(text string) (*Task, error) {
 
 	// Check for created date
 	if createdDateRx.MatchString(oriText) {
-		if err := parseCreatedDate(oriText, task); err != nil {
+		err := parseCreatedDate(oriText, task)
+		if err != nil {
 			return nil, errors.Wrap(err, "failed to parse task")
 		}
 	}
@@ -92,7 +94,8 @@ func ParseTask(text string) (*Task, error) {
 
 	// Check for additional tags
 	if addonTagRx.MatchString(oriText) {
-		if err := parseAdditionalTags(oriText, task); err != nil {
+		err := parseAdditionalTags(oriText, task)
+		if err != nil {
 			return nil, errors.Wrap(err, "failed to parse task")
 		}
 	}
