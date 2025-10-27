@@ -31,6 +31,7 @@ applyTo: "**"
 1. Run `go test ./...` to ensure all tests pass before linting
 2. Run `golangci-lint run` to identify linting issues
 3. Apply `golangci-lint run --fix` to auto-fix issues where possible if any issues are found
+    - For `wsl_v5` issues, `--fix` can resolve most of them automatically
 4. Run `golangci-lint run` again to see remaining issues
 5. Target one issue at a time and fix them manually
     - Use `golangci-lint run --enable-only=<linter_name>` to focus on a specific linter if needed
