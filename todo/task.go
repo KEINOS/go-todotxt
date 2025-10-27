@@ -1,13 +1,21 @@
 package todo
 
 import (
-	"fmt"
-	"sort"
 	"strings"
 	"time"
-
-	"github.com/pkg/errors"
 )
+
+// Clock interface for time operations, allowing dependency injection for testing.
+type Clock interface {
+	Now() time.Time
+}
+
+// realClock implements Clock using the real time.
+type realClock struct{}
+
+func (realClock) Now() time.Time {
+	return time.Now()
+}
 
 // ----------------------------------------------------------------------------
 //  Type: Task
@@ -36,6 +44,7 @@ type Task struct {
 	Projects       []string          // Projects of the task (e.g. +MyProject).
 	ID             int               // ID of the task internaly.
 	Completed      bool              // Completed flag. If true, the task has been completed.
+	clock          Clock             // clock for time operations, defaults to realClock.
 }
 
 // ----------------------------------------------------------------------------
@@ -45,69 +54,34 @@ type Task struct {
 // NewTask creates a new empty Task with default values. (CreatedDate is set to Now()).
 func NewTask() Task {
 	task := new(Task)
-	task.CreatedDate = time.Now()
+	task.clock = realClock{}
+	task.CreatedDate = task.clock.Now()
+
+	return *task
+}
+
+// NewTaskWithClock creates a new empty Task with a custom clock for testing.
+func NewTaskWithClock(clock Clock) Task {
+	task := new(Task)
+	task.clock = clock
+	task.CreatedDate = task.clock.Now()
 
 	return *task
 }
 
 // ParseTask parses the input text string into a Task struct.
 func ParseTask(text string) (*Task, error) {
-	var err error
+	parser := newTaskParser(text)
 
-	oriText := strings.Trim(text, whitespaces)
-	task := new(Task)
-	task.Original = oriText
-	task.Todo = oriText
-
-	// Check for completed (has 'x ' at the beginning)
-	if completedRx.MatchString(oriText) {
-		err := parseCompleted(oriText, task)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to parse task")
-		}
-	}
-
-	// Check for priority
-	if priorityRx.MatchString(oriText) {
-		parsePriority(oriText, task)
-	}
-
-	// Check for created date
-	if createdDateRx.MatchString(oriText) {
-		err := parseCreatedDate(oriText, task)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to parse task")
-		}
-	}
-
-	// Check for contexts
-	if contextRx.MatchString(oriText) {
-		task.Contexts = getSlice(oriText, contextRx)
-		task.Todo = contextRx.ReplaceAllString(task.Todo, emptyStr) // Remove from Todo text
-	}
-
-	// Check for projects
-	if projectRx.MatchString(oriText) {
-		task.Projects = getSlice(oriText, projectRx)
-		task.Todo = projectRx.ReplaceAllString(task.Todo, emptyStr) // Remove from Todo text
-	}
-
-	// Check for additional tags
-	if addonTagRx.MatchString(oriText) {
-		err := parseAdditionalTags(oriText, task)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to parse task")
-		}
-	}
-
-	// Trim any remaining whitespaces from Todo text
-	task.Todo = strings.Trim(task.Todo, "\t\n\r\f ")
-
-	return task, err
+	return parser.parse()
 }
 
 // ----------------------------------------------------------------------------
 //  Methods
+// ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+//  Status Methods
 // ----------------------------------------------------------------------------
 
 // Complete sets Task.Completed to 'true' if the task was not already completed.
@@ -115,9 +89,31 @@ func ParseTask(text string) (*Task, error) {
 func (task *Task) Complete() {
 	if !task.Completed {
 		task.Completed = true
-		task.CompletedDate = time.Now()
+		if task.clock == nil {
+			task.clock = realClock{}
+		}
+
+		task.CompletedDate = task.clock.Now()
 	}
 }
+
+// IsCompleted returns true if the task has already been completed.
+func (task *Task) IsCompleted() bool {
+	return task.Completed
+}
+
+// Reopen sets Task.Completed to 'false' if the task was completed.
+// Also resets Task.CompletedDate.
+func (task *Task) Reopen() {
+	if task.Completed {
+		task.Completed = false
+		task.CompletedDate = time.Time{} // time.IsZero() value
+	}
+}
+
+// ----------------------------------------------------------------------------
+//  Date Methods
+// ----------------------------------------------------------------------------
 
 // Due returns the duration left until due date from now. The duration is negative
 // if the task is overdue.
@@ -128,19 +124,9 @@ func (task *Task) Due() time.Duration {
 	return time.Until(task.DueDate.AddDate(0, 0, 1))
 }
 
-// HasAdditionalTags returns true if the task has any additional tags.
-func (task *Task) HasAdditionalTags() bool {
-	return len(task.AdditionalTags) > 0
-}
-
 // HasCompletedDate returns true if the task has a completed date.
 func (task *Task) HasCompletedDate() bool {
 	return !task.CompletedDate.IsZero() && task.Completed
-}
-
-// HasContexts returns true if the task has any contexts.
-func (task *Task) HasContexts() bool {
-	return len(task.Contexts) > 0
 }
 
 // HasCreatedDate returns true if the task has a created date.
@@ -153,22 +139,7 @@ func (task *Task) HasDueDate() bool {
 	return !task.DueDate.IsZero()
 }
 
-// HasPriority returns true if the task has a priority.
-func (task *Task) HasPriority() bool {
-	return isNotEmpty(task.Priority)
-}
-
-// HasProjects returns true if the task has any projects.
-func (task *Task) HasProjects() bool {
-	return len(task.Projects) > 0
-}
-
-// IsCompleted returns true if the task has already been completed.
-func (task *Task) IsCompleted() bool {
-	return task.Completed
-}
-
-// IsDueToday returns true if the task is due todasy.
+// IsDueToday returns true if the task is due today.
 func (task *Task) IsDueToday() bool {
 	if task.HasDueDate() {
 		due := task.Due()
@@ -191,14 +162,33 @@ func (task *Task) IsOverdue() bool {
 	return false
 }
 
-// Reopen sets Task.Completed to 'false' if the task was completed.
-// Also resets Task.CompletedDate.
-func (task *Task) Reopen() {
-	if task.Completed {
-		task.Completed = false
-		task.CompletedDate = time.Time{} // time.IsZero() value
-	}
+// ----------------------------------------------------------------------------
+//  Attribute Methods
+// ----------------------------------------------------------------------------
+
+// HasAdditionalTags returns true if the task has any additional tags.
+func (task *Task) HasAdditionalTags() bool {
+	return len(task.AdditionalTags) > 0
 }
+
+// HasContexts returns true if the task has any contexts.
+func (task *Task) HasContexts() bool {
+	return len(task.Contexts) > 0
+}
+
+// HasPriority returns true if the task has a priority.
+func (task *Task) HasPriority() bool {
+	return isNotEmpty(task.Priority)
+}
+
+// HasProjects returns true if the task has any projects.
+func (task *Task) HasProjects() bool {
+	return len(task.Projects) > 0
+}
+
+// ----------------------------------------------------------------------------
+//  String Methods
+// ----------------------------------------------------------------------------
 
 // String returns a complete task string in todo.txt format.
 //
@@ -209,65 +199,15 @@ func (task *Task) Reopen() {
 // For example:
 //
 //	"(A) 2013-07-23 Call Dad @Home @Phone +Family due:2013-07-31 customTag1:Important!"
-//
-//nolint:cyclop // complexity is high (=15), but leave it as is for now
 func (task Task) String() string {
-	var strBld strings.Builder
+	segs := task.Segments()
 
-	if task.Completed {
-		strBld.WriteString("x ")
-
-		if task.HasCompletedDate() {
-			strBld.WriteString(task.CompletedDate.Format(DateLayout) + " ")
-		}
+	displays := make([]string, len(segs))
+	for i, seg := range segs {
+		displays[i] = seg.Display
 	}
 
-	if task.HasPriority() && (!task.Completed || !RemoveCompletedPriority) {
-		strBld.WriteString(fmt.Sprintf("(%s) ", task.Priority))
-	}
-
-	if task.HasCreatedDate() {
-		strBld.WriteString(task.CreatedDate.Format(DateLayout) + " ")
-	}
-
-	strBld.WriteString(task.Todo)
-
-	if task.HasContexts() {
-		sort.Strings(task.Contexts)
-
-		for _, context := range task.Contexts {
-			strBld.WriteString(" @" + context)
-		}
-	}
-
-	if task.HasProjects() {
-		sort.Strings(task.Projects)
-
-		for _, project := range task.Projects {
-			strBld.WriteString(" +" + project)
-		}
-	}
-
-	if task.HasAdditionalTags() {
-		// Sort map alphabetically by keys
-		keys := make([]string, 0, len(task.AdditionalTags))
-
-		for key := range task.AdditionalTags {
-			keys = append(keys, key)
-		}
-
-		sort.Strings(keys)
-
-		for _, key := range keys {
-			strBld.WriteString(fmt.Sprintf(" %s:%s", key, task.AdditionalTags[key]))
-		}
-	}
-
-	if task.HasDueDate() {
-		strBld.WriteString(" due:" + task.DueDate.Format(DateLayout))
-	}
-
-	return strBld.String()
+	return strings.Join(displays, " ")
 }
 
 // Task returns a complete task string in todo.txt format.

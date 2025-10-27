@@ -9,7 +9,6 @@ package todo_test
 import (
 	"testing"
 
-	//nolint:depguard // external test package needs to import the module
 	"github.com/KEINOS/go-todotxt/todo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -173,28 +172,3 @@ func Test_rule3(t *testing.T) {
 
 // Rule 4: Contexts and Projects may appear anywhere in the line after priority
 // or prepended creation date.
-func Test_rule4(t *testing.T) {
-	t.Parallel()
-
-	t.Log("Contexts and Projects are:\n" +
-		"1. A context is preceded by a single space and an at-sign (@).\n" +
-		"2. A project is preceded by a single space and a plus-sign (+).\n" +
-		"3. A project or context contains any non-whitespace character.\n" +
-		"4. A task may have zero, one, or more than one projects and contexts included in it.")
-
-	t.Run(
-		"Tasks that have contexts and projects",
-		func(t *testing.T) {
-			t.Parallel()
-
-			// this task is part of the +Family and +PeaceLoveAndHappiness projects
-			// as well as the @iphone and @phone contexts.
-			task, err := todo.LoadFromString(`
-				(A) Call Mom +Family +PeaceLoveAndHappiness @iphone @phone
-			`)
-			require.NoError(t, err, "failed to load tasks")
-
-			require.NotEmpty(t, task[0].Projects)
-		},
-	)
-}

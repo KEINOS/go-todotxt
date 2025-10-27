@@ -7,8 +7,6 @@ import (
 )
 
 // Data provider for TestTaskSegments.
-//
-//nolint:gochecknoglobals // test data
 var testCasesTaskSegment = []struct {
 	text string
 	segs []*TaskSegment

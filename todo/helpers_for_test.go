@@ -97,9 +97,13 @@ func testLoadFromPath(t *testing.T, path string) TaskList {
 // subtests complete. If the directory creation fails, TempDir terminates the
 // test by calling Fatal.
 //
-//nolint:unparam // currently `pathSub` always receives `testOutput` but leave it as a parameter for future use
+//nolint:unparam // false positives, pathSub is used
 func testGetPathFileTemp(t *testing.T, pathSub string) string {
 	t.Helper()
+
+	if pathSub == "" {
+		t.Fatal("pathSub is required")
+	}
 
 	pathDirTemp := t.TempDir()
 	pathFileFull := filepath.Join(pathDirTemp, t.Name(), pathSub)

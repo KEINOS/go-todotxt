@@ -13,7 +13,7 @@ import (
 // Sort allows a TaskList to be sorted by certain predefined fields. Multiple-key
 // sorting is supported. See constants Sort* for fields and sort order.
 //
-//nolint:cyclop // complexity is 12 but leave it as is
+//nolint:cyclop // complexity is 12 but leave it as is. readability is fine.
 func (tasklist *TaskList) Sort(flag TaskSortByType, flags ...TaskSortByType) error {
 	lenFlags := len(flags)
 	combined := make([]TaskSortByType, lenFlags+1)

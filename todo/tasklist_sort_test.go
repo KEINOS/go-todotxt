@@ -371,7 +371,6 @@ func TestTaskList_Sort_sort_by_todo_text(t *testing.T) {
 	}
 }
 
-//nolint:funlen // function is long but leave it as is
 func TestTaskList_Sort_sort_by_multiple_flags(t *testing.T) {
 	t.Parallel()
 

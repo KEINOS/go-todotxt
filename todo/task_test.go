@@ -7,6 +7,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// fakeClock is a test helper that implements the Clock interface.
+type fakeClock struct {
+	now time.Time
+}
+
+func (f *fakeClock) Now() time.Time {
+	return f.now
+}
+
 // ----------------------------------------------------------------------------
 //  Tests: Constructors
 // ----------------------------------------------------------------------------
@@ -15,68 +24,106 @@ import (
 func TestNewTask_default_state(t *testing.T) {
 	task := NewTask()
 
-	// ID
-	expectID := 0
-	actualID := task.ID
-	require.Equal(t, expectID, actualID, "field ID failed to return expected ID")
+	t.Run("ID", func(t *testing.T) {
+		expectID := 0
+		actualID := task.ID
+		require.Equal(t, expectID, actualID, "field ID failed to return expected ID")
+	})
 
-	// Original
-	expectStrRaw := ""
-	actualStrRaw := task.Original
-	require.Equal(t, expectStrRaw, actualStrRaw, "field Original failed to return expected string")
+	t.Run("Original", func(t *testing.T) {
+		expectStrRaw := ""
+		actualStrRaw := task.Original
+		require.Equal(t, expectStrRaw, actualStrRaw, "field Original failed to return expected string")
+	})
 
-	//nolint:godox // the below Todo is not a comment as a TODO task
-	// Todo
-	expectTodo := ""
-	actualTodo := task.Todo
-	require.Equal(t, expectTodo, actualTodo, "field Todo failed to return expected string")
+	t.Run("Todo", func(t *testing.T) {
+		expectTodo := ""
+		actualTodo := task.Todo
+		require.Equal(t, expectTodo, actualTodo, "field Todo failed to return expected string")
+	})
 
-	// HasPriority()
-	require.False(t, task.HasPriority(),
-		"method HasPriority failed to return false. the given task does not have a priority")
+	t.Run("HasPriority", func(t *testing.T) {
+		require.False(t, task.HasPriority(),
+			"method HasPriority failed to return false. the given task does not have a priority")
+	})
 
-	// HasProjects()
-	require.False(t, task.HasProjects(),
-		"method HasProjects failed to return false. the given task does not have projects")
+	t.Run("HasProjects", func(t *testing.T) {
+		require.False(t, task.HasProjects(),
+			"method HasProjects failed to return false. the given task does not have projects")
+	})
 
-	// Projects
-	expectLenProj := 0
-	actualLenProj := len(task.Projects)
-	require.Equal(t, expectLenProj, actualLenProj, "field Projects failed to return expected length")
+	t.Run("Projects", func(t *testing.T) {
+		expectLenProj := 0
+		actualLenProj := len(task.Projects)
+		require.Equal(t, expectLenProj, actualLenProj, "field Projects failed to return expected length")
+	})
 
-	// HasContexts()
-	require.False(t, task.HasContexts(),
-		"method HasContexts failed to return false. the given task does not have contexts")
+	t.Run("HasContexts", func(t *testing.T) {
+		require.False(t, task.HasContexts(),
+			"method HasContexts failed to return false. the given task does not have contexts")
+	})
 
-	// Contexts length
-	expectLenContexts := 0
-	actualLenContexts := len(task.Contexts)
-	require.Equal(t, expectLenContexts, actualLenContexts, "field Contexts failed to return expected length")
+	t.Run("Contexts", func(t *testing.T) {
+		expectLenContexts := 0
+		actualLenContexts := len(task.Contexts)
+		require.Equal(t, expectLenContexts, actualLenContexts, "field Contexts failed to return expected length")
+	})
 
-	// HasAdditionalTags()
-	require.False(t, task.HasAdditionalTags(),
-		"method HasAdditionalTags failed to return false. the given task does not have additional tags")
+	t.Run("HasAdditionalTags", func(t *testing.T) {
+		require.False(t, task.HasAdditionalTags(),
+			"method HasAdditionalTags failed to return false. the given task does not have additional tags")
+	})
 
-	// AdditionalTags length
-	expectLenTags := 0
-	actualLenTags := len(task.AdditionalTags)
-	require.Equal(t, expectLenTags, actualLenTags, "field AdditionalTags failed to return expected length")
+	t.Run("AdditionalTags", func(t *testing.T) {
+		expectLenTags := 0
+		actualLenTags := len(task.AdditionalTags)
+		require.Equal(t, expectLenTags, actualLenTags, "field AdditionalTags failed to return expected length")
+	})
 
-	// HasCreatedDate()
-	require.True(t, task.HasCreatedDate(),
-		"method HasCreatedDate failed to return true. newly created tasks are automatically assigned a creation date")
+	t.Run("HasCreatedDate", func(t *testing.T) {
+		require.True(t, task.HasCreatedDate(),
+			"method HasCreatedDate failed to return true. newly created tasks are automatically assigned a creation date")
+	})
 
-	// HasCompletedDate()
-	require.False(t, task.HasCompletedDate(),
-		"method HasCompletedDate failed to return false. the given task does not have a completed date")
+	t.Run("HasCompletedDate", func(t *testing.T) {
+		require.False(t, task.HasCompletedDate(),
+			"method HasCompletedDate failed to return false. the given task does not have a completed date")
+	})
 
-	// HasDueDate()
-	require.False(t, task.HasDueDate(),
-		"method HasDueDate failed to return false. the given task does not have a due date")
+	t.Run("HasDueDate", func(t *testing.T) {
+		require.False(t, task.HasDueDate(),
+			"method HasDueDate failed to return false. the given task does not have a due date")
+	})
 
-	// Completed
-	require.False(t, task.Completed,
-		"field Completed failed to return false. the given task is not completed")
+	t.Run("Completed", func(t *testing.T) {
+		require.False(t, task.Completed,
+			"field Completed failed to return false. the given task is not completed")
+	})
+}
+
+func TestNewTaskWithClock(t *testing.T) {
+	t.Parallel()
+
+	fixedTime := time.Date(2023, 10, 27, 12, 0, 0, 0, time.UTC)
+	clock := &fakeClock{now: fixedTime}
+
+	task := NewTaskWithClock(clock)
+
+	require.Equal(t, fixedTime, task.CreatedDate, "CreatedDate should be set to the clock's now time")
+	require.True(t, task.HasCreatedDate(), "HasCreatedDate should return true")
+}
+
+func TestTask_Complete_with_nil_clock(t *testing.T) {
+	t.Parallel()
+
+	// Create a task without setting clock (should be nil)
+	task := new(Task)
+
+	// Complete should set clock to realClock if nil
+	task.Complete()
+
+	require.True(t, task.Completed, "task should be completed")
+	require.True(t, task.HasCompletedDate(), "task should have completed date")
 }
 
 func Test_ParseTask(t *testing.T) {
@@ -88,77 +135,115 @@ func Test_ParseTask(t *testing.T) {
 	)
 	require.NoError(t, err, "method ParseTask failed to parse task")
 
-	/* Method tests */
+	t.Run("Task", func(t *testing.T) {
+		t.Parallel()
 
-	// Task()
-	expectStr := "x (C) 2014-01-01 Create golang library documentation not::tag @Go +go-todotxt hello:world due:2014-01-12"
-	actualStr := task.Task()
-	require.Equal(t, expectStr, actualStr, "method Task failed to return expected string")
+		expectStr := "x (C) 2014-01-01 Create golang library documentation " +
+			"not::tag @Go +go-todotxt hello:world due:2014-01-12"
+		actualStr := task.Task()
+		require.Equal(t, expectStr, actualStr, "method Task failed to return expected string")
+	})
 
-	// ID
-	expectID := 0
-	actualID := task.ID
-	require.Equal(t, expectID, actualID, "field ID failed to return expected ID")
+	t.Run("ID", func(t *testing.T) {
+		t.Parallel()
 
-	// Original
-	expectRaw := "x (C) 2014-01-01 @Go due:2014-01-12 Create " +
-		"golang library documentation +go-todotxt  hello:world not::tag"
-	actualRaw := task.Original
-	require.Equal(t, expectRaw, actualRaw, "field Original failed to return expected string")
+		expectID := 0
+		actualID := task.ID
+		require.Equal(t, expectID, actualID, "field ID failed to return expected ID")
+	})
 
-	//nolint:godox // the below is not a comment as a TODO
-	// Todo
-	expectTask := "Create golang library documentation not::tag"
-	actualTask := task.Todo
-	require.Equal(t, expectTask, actualTask, "field Todo failed to return expected string")
+	t.Run("Original", func(t *testing.T) {
+		t.Parallel()
 
-	// HasPriority()
-	require.True(t, task.HasPriority(),
-		"method HasPriority failed to return true. the given task has a priority")
+		expectRaw := "x (C) 2014-01-01 @Go due:2014-01-12 Create " +
+			"golang library documentation +go-todotxt  hello:world not::tag"
+		actualRaw := task.Original
+		require.Equal(t, expectRaw, actualRaw, "field Original failed to return expected string")
+	})
 
-	// Priority
-	expectPriority := "C"
-	actualPriority := task.Priority
-	require.Equal(t, expectPriority, actualPriority, "field Priority failed to return expected string")
+	t.Run("Todo", func(t *testing.T) {
+		t.Parallel()
 
-	// HasProjects()
-	require.True(t, task.HasProjects(), "method HasProjects failed to return true. the given task has projects")
+		expectTask := "Create golang library documentation not::tag"
+		actualTask := task.Todo
+		require.Equal(t, expectTask, actualTask, "field Todo failed to return expected string")
+	})
 
-	// Projects length
-	expectLenProj := 1
-	actualLenProj := len(task.Projects)
-	require.Equal(t, expectLenProj, actualLenProj, "field Projects failed to return expected length")
+	t.Run("HasPriority", func(t *testing.T) {
+		t.Parallel()
+		require.True(t, task.HasPriority(),
+			"method HasPriority failed to return true. the given task has a priority")
+	})
 
-	// HasContexts()
-	require.True(t, task.HasContexts(), "method HasContexts failed to return true. the given task has contexts")
+	t.Run("Priority", func(t *testing.T) {
+		t.Parallel()
 
-	// Contexts length
-	expectLenContexts := 1
-	actualLenContexts := len(task.Contexts)
-	require.Equal(t, expectLenContexts, actualLenContexts, "field Contexts failed to return expected length")
+		expectPriority := "C"
+		actualPriority := task.Priority
+		require.Equal(t, expectPriority, actualPriority, "field Priority failed to return expected string")
+	})
 
-	// HasAdditionalTags()
-	require.True(t, task.HasAdditionalTags(),
-		"method HasAdditionalTags failed to return true. the given task has additional tags")
+	t.Run("HasProjects", func(t *testing.T) {
+		t.Parallel()
+		require.True(t, task.HasProjects(), "method HasProjects failed to return true. the given task has projects")
+	})
 
-	// AdditionalTags length
-	expectLenTag := 1
-	actualLenTag := len(task.AdditionalTags)
-	require.Equal(t, expectLenTag, actualLenTag, "field AdditionalTags failed to return expected length")
+	t.Run("Projects", func(t *testing.T) {
+		t.Parallel()
 
-	// Completed
-	require.True(t, task.Completed, "field Completed failed to return true. the given task is completed")
+		expectLenProj := 1
+		actualLenProj := len(task.Projects)
+		require.Equal(t, expectLenProj, actualLenProj, "field Projects failed to return expected length")
+	})
 
-	// HasCreatedDate()
-	require.True(t, task.HasCreatedDate(),
-		"method HasCreatedDate failed to return true. the given task has a created date")
+	t.Run("HasContexts", func(t *testing.T) {
+		t.Parallel()
+		require.True(t, task.HasContexts(), "method HasContexts failed to return true. the given task has contexts")
+	})
 
-	// HasDueDate()
-	require.True(t, task.HasDueDate(), "method HasDueDate failed to return true. the given task has a due date")
+	t.Run("Contexts", func(t *testing.T) {
+		t.Parallel()
 
-	// HasCompletedDate()
-	require.False(t, task.HasCompletedDate(),
-		"method HasCompletedDate failed to return false. the given task does not have a completed date")
+		expectLenContexts := 1
+		actualLenContexts := len(task.Contexts)
+		require.Equal(t, expectLenContexts, actualLenContexts, "field Contexts failed to return expected length")
+	})
+
+	t.Run("HasAdditionalTags", func(t *testing.T) {
+		t.Parallel()
+		require.True(t, task.HasAdditionalTags(),
+			"method HasAdditionalTags failed to return true. the given task has additional tags")
+	})
+
+	t.Run("AdditionalTags", func(t *testing.T) {
+		t.Parallel()
+
+		expectLenTag := 1
+		actualLenTag := len(task.AdditionalTags)
+		require.Equal(t, expectLenTag, actualLenTag, "field AdditionalTags failed to return expected length")
+	})
+
+	t.Run("Completed", func(t *testing.T) {
+		t.Parallel()
+		require.True(t, task.Completed, "field Completed failed to return true. the given task is completed")
+	})
+
+	t.Run("HasCreatedDate", func(t *testing.T) {
+		t.Parallel()
+		require.True(t, task.HasCreatedDate(),
+			"method HasCreatedDate failed to return true. the given task has a created date")
+	})
+
+	t.Run("HasDueDate", func(t *testing.T) {
+		t.Parallel()
+		require.True(t, task.HasDueDate(), "method HasDueDate failed to return true. the given task has a due date")
+	})
+
+	t.Run("HasCompletedDate", func(t *testing.T) {
+		t.Parallel()
+		require.False(t, task.HasCompletedDate(),
+			"method HasCompletedDate failed to return false. the given task does not have a completed date")
+	})
 }
 
 // ----------------------------------------------------------------------------
@@ -269,39 +354,19 @@ func TestTask_Contexts(t *testing.T) {
 	// Load the test tasklist
 	testTasklist := testLoadFromPath(t, testInputTask)
 
-	{
-		taskID := 16
-		task := testTasklist[taskID-1]
+	for _, test := range []struct {
+		taskID         int
+		expectContexts []string
+	}{
+		{taskID: 16, expectContexts: []string{"Call", "Phone"}},
+		{taskID: 17, expectContexts: []string{"Office"}},
+		{taskID: 18, expectContexts: []string{"Electricity", "Home", "Of_Super-Importance", "Television"}},
+		{taskID: 19, expectContexts: nil}, // No contexts
+	} {
+		task := testTasklist[test.taskID-1]
 
-		expectContexts := []string{"Call", "Phone"}
-		actualContexts := task.Contexts
-		require.Equal(t, expectContexts, actualContexts,
-			"task[%d] did not have the expected contexts: %s", taskID, task.String())
-	}
-	{
-		taskID := 17
-		task := testTasklist[taskID-1]
-
-		expectContexts := []string{"Office"}
-		actualContexts := task.Contexts
-		require.Equal(t, expectContexts, actualContexts,
-			"task[%d] did not have the expected contexts: %s", taskID, task.String())
-	}
-	{
-		taskID := 18
-		task := testTasklist[taskID-1]
-
-		expectContexts := []string{"Electricity", "Home", "Of_Super-Importance", "Television"}
-		actualContexts := testTasklist[taskID-1].Contexts
-		require.Equal(t, expectContexts, actualContexts,
-			"task[%d] did not have the expected contexts: %s", taskID, task.String())
-	}
-	{
-		taskID := 19
-		task := testTasklist[taskID-1]
-
-		require.Empty(t, task.Contexts,
-			"task[%d] should not have contexts: %s", taskID, task.String())
+		require.Equal(t, test.expectContexts, task.Contexts,
+			"task[%d] did not have the expected contexts: %s", test.taskID, task.String())
 	}
 }
 
@@ -311,42 +376,30 @@ func TestTask_Projects(t *testing.T) {
 	// Load the test tasklist
 	testTasklist := testLoadFromPath(t, testInputTask)
 
-	{
-		taskID := 20
-		task := testTasklist[taskID-1]
+	for _, test := range []struct {
+		taskID         int
+		expectProjects []string
+	}{
+		{taskID: 20, expectProjects: []string{"Gardening", "Improving", "Planning", "Relaxing-Work"}},
+		{taskID: 21, expectProjects: []string{"Novel"}},
+		{taskID: 22, expectProjects: nil}, // No projects
+	} {
+		task := testTasklist[test.taskID-1]
 
-		expectProj := []string{"Gardening", "Improving", "Planning", "Relaxing-Work"}
-		actualProj := task.Projects
-		require.Equal(t, expectProj, actualProj,
-			"Task[%d] did not have the expected projects: %s", taskID, task.String())
-	}
-	{
-		taskID := 21
-		task := testTasklist[taskID-1]
-
-		expectProj := []string{"Novel"}
-		actualProj := task.Projects
-		require.Equal(t, expectProj, actualProj,
-			"Task[%d] did not have the expected projects: %s", taskID, task.String())
-	}
-	{
-		taskID := 22
-		task := testTasklist[taskID-1]
-
-		require.Empty(t, task.Projects,
-			"Task[%d] should not have projects: %s", taskID, task.String())
+		require.Equal(t, test.expectProjects, task.Projects,
+			"Task[%d] did not have the expected projects: %s", test.taskID, task.String())
 	}
 }
 
-//nolint:funlen // leave it as is since it's a test
 func TestTask_DueDate(t *testing.T) {
 	t.Parallel()
 
 	// Load the test tasklist
 	testTasklist := testLoadFromPath(t, testInputTask)
 
-	// Has due date
-	{
+	t.Run("HasDueDate", func(t *testing.T) {
+		t.Parallel()
+
 		taskID := 23
 		task := testTasklist[taskID-1]
 
@@ -356,10 +409,11 @@ func TestTask_DueDate(t *testing.T) {
 		actualTime := task.DueDate
 
 		require.Equal(t, expectTime, actualTime, "task[%d] should have a due date: %s", taskID, task.String())
-	}
+	})
 
-	// No due date
-	{
+	t.Run("NoDueDate", func(t *testing.T) {
+		t.Parallel()
+
 		taskID := 24
 		task := testTasklist[taskID-1]
 
@@ -369,24 +423,26 @@ func TestTask_DueDate(t *testing.T) {
 		// IsDueToday()
 		require.False(t, task.IsDueToday(),
 			"task[%d] should not havebe due today but IsDueToday() returned true: %s", taskID, task.String())
-	}
+	})
 
-	// Yesterdays task
-	{
+	t.Run("Overdue", func(t *testing.T) {
+		t.Parallel()
+
 		task, err := ParseTask("Hello Yesterday Task due:" + time.Now().AddDate(0, 0, -1).Format(DateLayout))
 
 		require.NoError(t, err,
 			"failed to parse task during testing")
 		require.Less(t, task.Due(), time.Duration(0),
-			"on overdue the duration time should be netagive: %s", task.String())
+			"on overdue the duration time should be negative: %s", task.String())
 		require.True(t, task.IsOverdue(),
 			"on overdue tasks IsOverdue should return true: %s", task.String())
 		require.False(t, task.IsDueToday(),
 			"on overdue tasks IsDueToday should return false: %s", task.String())
-	}
+	})
 
-	// Do it right now
-	{
+	t.Run("DueToday", func(t *testing.T) {
+		t.Parallel()
+
 		task, err := ParseTask("Hello Today Task due:" + time.Now().Format(DateLayout))
 
 		require.NoError(t, err,
@@ -397,10 +453,11 @@ func TestTask_DueDate(t *testing.T) {
 			"on due today tasks IsOverdue should return false: %s", task.String())
 		require.True(t, task.IsDueToday(),
 			"on due today tasks IsDueToday should return true: %s", task.String())
-	}
+	})
 
-	// Hasta mañana. Will do tomorrow
-	{
+	t.Run("DueTomorrow", func(t *testing.T) {
+		t.Parallel()
+
 		task, err := ParseTask("Hello Tomorrow Task due:" + time.Now().AddDate(0, 0, 1).Format(DateLayout))
 
 		require.NoError(t, err,
@@ -413,7 +470,7 @@ func TestTask_DueDate(t *testing.T) {
 			"on due tomorrow tasks IsOverdue should return false: %s", task.String())
 		require.False(t, task.IsDueToday(),
 			"on due tomorrow tasks IsDueToday should return false: %s", task.String())
-	}
+	})
 }
 
 func TestTask_AddonTags(t *testing.T) {
@@ -422,42 +479,19 @@ func TestTask_AddonTags(t *testing.T) {
 	// Load the test tasklist
 	testTasklist := testLoadFromPath(t, testInputTask)
 
-	// Golden cases
-	{
-		taskID := 25
-		task := testTasklist[taskID-1]
+	for _, test := range []struct {
+		taskID               int
+		expectAdditionalTags map[string]string
+	}{
+		{taskID: 25, expectAdditionalTags: map[string]string{"Level": "5", "private": "false"}},
+		{taskID: 26, expectAdditionalTags: map[string]string{"Importance": "Very!"}},
+		{taskID: 27, expectAdditionalTags: nil}, // No additional tags
+		{taskID: 28, expectAdditionalTags: nil}, // No additional tags
+	} {
+		task := testTasklist[test.taskID-1]
 
-		expectTags := map[string]string{"Level": "5", "private": "false"}
-		actualTags := task.AdditionalTags
-
-		require.Equal(t, expectTags, actualTags,
-			"task[%d] did not contain the expected additional tags: %s", taskID, task)
-	}
-	{
-		taskID := 26
-		task := testTasklist[taskID-1]
-
-		expectTags := map[string]string{"Importance": "Very!"}
-		actualTags := testTasklist[taskID-1].AdditionalTags
-
-		require.Equal(t, expectTags, actualTags,
-			"task[%d] did not contain the expected additional tags: %s", taskID, task)
-	}
-
-	// Empty tag cases
-	{
-		taskID := 27
-		task := testTasklist[taskID-1]
-
-		require.Empty(t, task.AdditionalTags,
-			"task[%d] should not contain additional tags: %s", taskID, task)
-	}
-	{
-		taskID := 28
-		task := testTasklist[taskID-1]
-
-		require.Empty(t, task.AdditionalTags,
-			"task[%d] should not contain additional tags: %s", taskID, task)
+		require.Equal(t, test.expectAdditionalTags, task.AdditionalTags,
+			"task[%d] did not contain the expected additional tags: %s", test.taskID, task.String())
 	}
 }
 
@@ -471,30 +505,21 @@ func TestTask_IsCompleted(t *testing.T) {
 	// Load the test tasklist
 	testTasklist := testLoadFromPath(t, testInputTask)
 
-	// Completed case
-	{
-		taskID := 31
-		task := testTasklist[taskID-1]
+	for _, test := range []struct {
+		taskID int
+		expect bool
+	}{
+		{taskID: 31, expect: true},
+		{taskID: 32, expect: false},
+	} {
+		task := testTasklist[test.taskID-1]
 
 		testGot1 := task.Completed
 		testGot2 := task.IsCompleted()
 
-		require.True(t, testGot2, "task[%d] should be as completed: %s", taskID, task.String())
+		require.Equal(t, test.expect, testGot2, "task[%d] should be as completed: %s", test.taskID, task.String())
 		require.Equal(t, testGot1, testGot2,
-			"task[%d] should be completed and IsCompleted() should return true: %s", taskID, task.String())
-	}
-
-	// Not completed case
-	{
-		taskID := 32
-		task := testTasklist[taskID-1]
-
-		testGot1 := task.Completed
-		testGot2 := task.IsCompleted()
-
-		require.False(t, testGot2, "task[%d] should not be as completed: %s", taskID, task.String())
-		require.Equal(t, testGot1, testGot2,
-			"task[%d] should not be completed and IsCompleted() should return false: %s", taskID, task.String())
+			"task[%d] should be completed and IsCompleted() should return true: %s", test.taskID, task.String())
 	}
 }
 
@@ -530,53 +555,31 @@ func TestTask_CompletedDate(t *testing.T) {
 	// Load the test tasklist
 	testTasklist := testLoadFromPath(t, testInputTask)
 
-	{
-		taskID := 34
+	for _, test := range []struct {
+		taskID           int
+		hasCompletedDate bool
+		expectedDate     string
+	}{
+		{taskID: 34, hasCompletedDate: false, expectedDate: ""},
+		{taskID: 35, hasCompletedDate: true, expectedDate: "2014-01-03"},
+		{taskID: 36, hasCompletedDate: false, expectedDate: ""},
+		{taskID: 37, hasCompletedDate: true, expectedDate: "2014-01-02"},
+		{taskID: 38, hasCompletedDate: true, expectedDate: "2014-01-03"},
+		{taskID: 39, hasCompletedDate: false, expectedDate: ""},
+	} {
+		task := testTasklist[test.taskID-1]
 
-		require.False(t, testTasklist[taskID-1].HasCompletedDate(),
-			"task[%d] should to not have a completed date: %s", taskID, testTasklist[taskID-1].String())
-	}
-	{
-		taskID := 35
+		if test.hasCompletedDate {
+			expectCompletedDate, err := parseTime(test.expectedDate)
+			require.NoError(t, err, "failed to parse time for task[%d]", test.taskID)
 
-		expectCompletedDate, err := parseTime("2014-01-03")
-		require.NoError(t, err, "failed to parse time for task[%d]", taskID)
-
-		actualCompletedDate := testTasklist[taskID-1].CompletedDate
-		require.Equal(t, expectCompletedDate, actualCompletedDate,
-			"task[%d] should have a completed date of %s, but got %s", taskID, expectCompletedDate, actualCompletedDate)
-	}
-	{
-		taskID := 36
-
-		require.False(t, testTasklist[taskID-1].HasCompletedDate(),
-			"task[%d] should to not have a completed date: %s", taskID, testTasklist[taskID-1].String())
-	}
-	{
-		taskID := 37
-
-		expectCompletedDate, err := parseTime("2014-01-02")
-		require.NoError(t, err, "failed to parse time for task[%d]", taskID)
-
-		actualCompletedDate := testTasklist[taskID-1].CompletedDate
-		require.Equal(t, expectCompletedDate, actualCompletedDate,
-			"task[%d] should have a completed date of %s, but got %s", taskID, expectCompletedDate, actualCompletedDate)
-	}
-	{
-		taskID := 38
-
-		expectCompletedDate, err := parseTime("2014-01-03")
-		require.NoError(t, err, "failed to parse time for task[%d]", taskID)
-
-		actualCompletedDate := testTasklist[taskID-1].CompletedDate
-		require.Equal(t, expectCompletedDate, actualCompletedDate,
-			"task[%d] should have a completed date of %s, but got %s", taskID, expectCompletedDate, actualCompletedDate)
-	}
-	{
-		taskID := 39
-
-		require.False(t, testTasklist[taskID-1].HasCompletedDate(),
-			"task[%d] should to not have a completed date: %s", taskID, testTasklist[taskID-1].String())
+			actualCompletedDate := task.CompletedDate
+			require.Equal(t, expectCompletedDate, actualCompletedDate,
+				"task[%d] should have a completed date of %s, but got %s", test.taskID, expectCompletedDate, actualCompletedDate)
+		} else {
+			require.False(t, task.HasCompletedDate(),
+				"task[%d] should not have a completed date: %s", test.taskID, task.String())
+		}
 	}
 }
 
@@ -585,54 +588,75 @@ func TestTask_IsOverdue(t *testing.T) {
 	// Load the test tasklist
 	testTasklist := testLoadFromPath(t, testInputTask)
 
-	{
-		taskID := 40
+	for _, test := range []struct {
+		taskID        int
+		expectOverdue bool
+		modifyDueDate func(*Task) // optional function to modify due date
+		checkDueHours func(*Task) // optional function to check due hours
+	}{
+		{
+			taskID:        40,
+			expectOverdue: true,
+			modifyDueDate: nil,
+			checkDueHours: nil,
+		},
+		{
+			taskID:        41,
+			expectOverdue: false,
+			modifyDueDate: func(task *Task) {
+				task.DueDate = time.Now()
+			},
+			checkDueHours: func(task *Task) {
+				dueHours := task.Due().Hours()
+				require.True(t, dueHours > 23.0 && dueHours < 25.0,
+					"task[%d] should be due in 24 hours: %s", 41, task.String())
+			},
+		},
+		{
+			taskID:        42,
+			expectOverdue: true,
+			modifyDueDate: func(task *Task) {
+				task.DueDate = time.Now().AddDate(0, 0, -4)
+			},
+			checkDueHours: func(task *Task) {
+				dueHours := task.Due().Hours()
+				require.True(t, dueHours < 71 || dueHours > 73,
+					"task[%d] should be due since 72 hours: due hours: %v, task: %s",
+					42, dueHours, task.String())
+			},
+		},
+		{
+			taskID:        42,
+			expectOverdue: false,
+			modifyDueDate: func(task *Task) {
+				task.DueDate = time.Now().AddDate(0, 0, 2)
+			},
+			checkDueHours: func(task *Task) {
+				dueHours := task.Due().Hours()
+				require.True(t, dueHours > 71 || dueHours < 73,
+					"task[%d] should be due in 72 hours: due hours: %v, task: %s",
+					42, dueHours, task.String())
+			},
+		},
+		{
+			taskID:        43,
+			expectOverdue: false,
+			modifyDueDate: nil,
+			checkDueHours: nil,
+		},
+	} {
+		task := testTasklist[test.taskID-1]
 
-		require.True(t, testTasklist[taskID-1].IsOverdue(),
-			"task[%d] should be as overdue: %s", taskID, testTasklist[taskID-1].String())
-	}
-	{
-		taskID := 41
+		if test.modifyDueDate != nil {
+			test.modifyDueDate(&task)
+		}
 
-		require.False(t, testTasklist[taskID-1].IsOverdue(),
-			"task[%d] should not be as overdue: %s", taskID, testTasklist[taskID-1].String())
+		require.Equal(t, test.expectOverdue, task.IsOverdue(),
+			"task[%d] overdue status mismatch: %s", test.taskID, task.String())
 
-		// Update the due date to be now
-		testTasklist[taskID-1].DueDate = time.Now()
-
-		dueHours := testTasklist[taskID-1].Due().Hours()
-		require.True(t, dueHours > 23.0 && dueHours < 25.0,
-			"task[%d] should be due in 24 hours: %s", taskID, testTasklist[taskID-1].String())
-	}
-	{
-		taskID := 42
-
-		require.True(t, testTasklist[taskID-1].IsOverdue(),
-			"task[%d] should be as overdue: %s", taskID, testTasklist[taskID-1].String())
-
-		// Update the due date to be 4 days ago
-		testTasklist[taskID-1].DueDate = time.Now().AddDate(0, 0, -4)
-
-		dueHours := testTasklist[taskID-1].Due().Hours()
-
-		require.True(t, dueHours < 71 || dueHours > 73,
-			"task[%d] should to be due since 72 hours: due hours: %v, task: %s",
-			taskID, dueHours, testTasklist[taskID-1].String(),
-		)
-
-		testTasklist[taskID-1].DueDate = time.Now().AddDate(0, 0, 2)
-
-		dueHours = testTasklist[taskID-1].Due().Hours()
-		require.True(t, dueHours > 71 || dueHours < 73,
-			"task[%d] should be due in 72 hours: due hours: %v, task: %s",
-			taskID, dueHours, testTasklist[taskID-1].String(),
-		)
-	}
-	{
-		taskID := 43
-
-		require.False(t, testTasklist[taskID-1].IsOverdue(),
-			"task[%d] should not be as overdue: %s", taskID, testTasklist[taskID-1].String())
+		if test.checkDueHours != nil {
+			test.checkDueHours(&task)
+		}
 	}
 }
 
@@ -642,53 +666,76 @@ func TestTask_Complete(t *testing.T) {
 	// Load the test tasklist
 	testTasklist := testLoadFromPath(t, testInputTask)
 
-	taskID := 44
+	for _, test := range []struct {
+		taskID           int
+		initialCompleted bool
+		initialHasDate   bool
+		expectCompleted  bool
+		expectHasDate    bool
+		expectDateFormat string // optional, for checking completed date
+	}{
+		{
+			taskID:           44,
+			initialCompleted: false,
+			initialHasDate:   false,
+			expectCompleted:  true,
+			expectHasDate:    true,
+			expectDateFormat: time.Now().Format(DateLayout),
+		},
+		{
+			taskID:           45,
+			initialCompleted: false,
+			initialHasDate:   false,
+			expectCompleted:  true,
+			expectHasDate:    true,
+			expectDateFormat: time.Now().Format(DateLayout),
+		},
+		{
+			taskID:           46,
+			initialCompleted: false,
+			initialHasDate:   false,
+			expectCompleted:  true,
+			expectHasDate:    true,
+			expectDateFormat: time.Now().Format(DateLayout),
+		},
+		{
+			taskID:           47,
+			initialCompleted: false,
+			initialHasDate:   false,
+			expectCompleted:  true,
+			expectHasDate:    true,
+			expectDateFormat: time.Now().Format(DateLayout),
+		},
+		{
+			taskID:           48,
+			initialCompleted: true,
+			initialHasDate:   true,
+			expectCompleted:  true,
+			expectHasDate:    true,
+			expectDateFormat: "2012-01-01", // already completed, date should not change
+		},
+	} {
+		tmpTask := testTasklist[test.taskID-1]
 
-	// first 4 tasks should all match the same tests (which are not completed tasks)
-	for range 4 {
-		tmpTask := testTasklist[taskID-1]
-
-		require.False(t, tmpTask.Completed,
-			"task[%d] should not be as completed: %s", taskID, tmpTask.String())
-		require.False(t, tmpTask.HasCompletedDate(),
-			"task[%d] should not have a completed date: %s", taskID, tmpTask.String())
+		// Check initial state
+		require.Equal(t, test.initialCompleted, tmpTask.Completed,
+			"task[%d] initial completed state mismatch: %s", test.taskID, tmpTask.String())
+		require.Equal(t, test.initialHasDate, tmpTask.HasCompletedDate(),
+			"task[%d] initial has date state mismatch: %s", test.taskID, tmpTask.String())
 
 		tmpTask.Complete() // close the task right now
 
-		require.True(t, tmpTask.Completed,
-			"tasks invoked with the Complete() method should be marked as completed: %s", tmpTask.String())
-		require.True(t, tmpTask.HasCompletedDate(),
-			"tasks invoked with the Complete() method should have a completed date: %s", tmpTask.String())
+		// Check after Complete()
+		require.Equal(t, test.expectCompleted, tmpTask.Completed,
+			"task[%d] after Complete() completed state mismatch: %s", test.taskID, tmpTask.String())
+		require.Equal(t, test.expectHasDate, tmpTask.HasCompletedDate(),
+			"task[%d] after Complete() has date state mismatch: %s", test.taskID, tmpTask.String())
 
-		expectDate := time.Now().Format(DateLayout)
-		actualTime := tmpTask.CompletedDate.Format(DateLayout)
-		require.Equal(t, expectDate, actualTime,
-			"tasks invoked with the Complete() method should have a completed date of Now(): %s", tmpTask.String())
-
-		taskID++
-	}
-
-	// Closing a closed already task (should not change anything)
-	{
-		tmpTask := testTasklist[taskID-1]
-
-		require.True(t, tmpTask.Completed,
-			"task[%d] should be as completed: %s", taskID, tmpTask.String())
-		require.True(t, tmpTask.HasCompletedDate(),
-			"task[%d] should have a completed date: %s", taskID, tmpTask.String())
-
-		tmpTask.Complete() // close the task right now
-
-		require.True(t, tmpTask.Completed,
-			"tasks invoked with the Complete() method should be marked as completed: %s", tmpTask.String())
-		require.True(t, tmpTask.HasCompletedDate(),
-			"tasks invoked with the Complete() method should have a completed date: %s", tmpTask.String())
-
-		// completed date should not be changed
-		expectDate := "2012-01-01"
-		actualTime := tmpTask.CompletedDate.Format(DateLayout)
-		require.Equal(t, expectDate, actualTime,
-			"the Complete() method should not overwrite a completed date: %s", tmpTask.String())
+		if test.expectDateFormat != "" {
+			actualTime := tmpTask.CompletedDate.Format(DateLayout)
+			require.Equal(t, test.expectDateFormat, actualTime,
+				"task[%d] completed date mismatch: %s", test.taskID, tmpTask.String())
+		}
 	}
 }
 
@@ -698,62 +745,71 @@ func TestTask_Reopen(t *testing.T) {
 	// Load the test tasklist
 	testTasklist := testLoadFromPath(t, testInputTask)
 
-	taskID := 49
+	for _, test := range []struct {
+		taskID               int
+		initialCompleted     bool
+		initialHasDate       bool
+		expectCompletedAfter bool
+		expectHasDateAfter   bool
+	}{
+		{
+			taskID:               49,
+			initialCompleted:     true,
+			initialHasDate:       false,
+			expectCompletedAfter: false,
+			expectHasDateAfter:   false,
+		},
+		{
+			taskID:               50,
+			initialCompleted:     true,
+			initialHasDate:       false,
+			expectCompletedAfter: false,
+			expectHasDateAfter:   false,
+		},
+		{
+			taskID:               51,
+			initialCompleted:     true,
+			initialHasDate:       true,
+			expectCompletedAfter: false,
+			expectHasDateAfter:   false,
+		},
+		{
+			taskID:               52,
+			initialCompleted:     true,
+			initialHasDate:       true,
+			expectCompletedAfter: false,
+			expectHasDateAfter:   false,
+		},
+		{
+			taskID:               53,
+			initialCompleted:     true,
+			initialHasDate:       true,
+			expectCompletedAfter: false,
+			expectHasDateAfter:   false,
+		},
+		{
+			taskID:               54,
+			initialCompleted:     false,
+			initialHasDate:       false,
+			expectCompletedAfter: false,
+			expectHasDateAfter:   false, // reopening uncompleted task
+		},
+	} {
+		tmpTask := testTasklist[test.taskID-1]
 
-	// the first 2 tasks should match the same tests (completed flag but with no completed date)
-	for range 2 {
-		tmpTask := testTasklist[taskID-1]
-
-		require.True(t, tmpTask.Completed,
-			"task[%d] should be as completed: %s", taskID, tmpTask.String())
-		require.False(t, tmpTask.HasCompletedDate(),
-			"task[%d] should not have a completed date before reopening: %s", taskID, tmpTask.String())
+		// Check initial state
+		require.Equal(t, test.initialCompleted, tmpTask.Completed,
+			"task[%d] initial completed state mismatch: %s", test.taskID, tmpTask.String())
+		require.Equal(t, test.initialHasDate, tmpTask.HasCompletedDate(),
+			"task[%d] initial has date state mismatch: %s", test.taskID, tmpTask.String())
 
 		tmpTask.Reopen() // reopen the task
 
-		require.False(t, tmpTask.Completed,
-			"reopened task should not be as completed: %s", taskID, tmpTask.String())
-		require.False(t, tmpTask.HasCompletedDate(),
-			"reopened task should not have a completed date: %s", taskID, tmpTask.String())
-
-		taskID++
-	}
-
-	// the next 3 tasks should all match the same tests (completed flag with completed date)
-	for range 3 {
-		tmpTask := testTasklist[taskID-1]
-
-		require.True(t, tmpTask.Completed,
-			"task[%d] should be as completed: %s", taskID, tmpTask.String())
-		require.True(t, tmpTask.HasCompletedDate(),
-			"task[%d] should have a completed date before reopening: %s", taskID, tmpTask.String())
-
-		tmpTask.Reopen() // reopen the task
-
-		require.False(t, tmpTask.Completed,
-			"reopened task[%d] should not be as completed: %s", taskID, tmpTask.String())
-		require.False(t, tmpTask.HasCompletedDate(),
-			"reopened task[%d] should not have a completed date: %s", taskID, tmpTask.String())
-
-		taskID++
-	}
-
-	// Reopening an uncompleted task (should not change anything)
-	{
-		tmpTask := testTasklist[taskID-1]
-
-		require.False(t, tmpTask.Completed,
-			"the task[%d] should not be as completed: %s", taskID, tmpTask.String())
-		require.False(t, tmpTask.HasCompletedDate(),
-			"the task[%d] should not have a completed date: %s", taskID, tmpTask.String())
-
-		tmpTask.Reopen() // reopen the task
-
-		// these two should not be changed
-		require.False(t, tmpTask.Completed,
-			"reopened task[%d] should not be as completed: %s", taskID, tmpTask.String())
-		require.False(t, tmpTask.HasCompletedDate(),
-			"reopened task[%d] should not have a completed date: %s", taskID, tmpTask.String())
+		// Check after Reopen()
+		require.Equal(t, test.expectCompletedAfter, tmpTask.Completed,
+			"task[%d] after Reopen() completed state mismatch: %s", test.taskID, tmpTask.String())
+		require.Equal(t, test.expectHasDateAfter, tmpTask.HasCompletedDate(),
+			"task[%d] after Reopen() has date state mismatch: %s", test.taskID, tmpTask.String())
 	}
 }
 

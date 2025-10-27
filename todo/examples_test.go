@@ -5,7 +5,6 @@ import (
 	"log"
 	"strings"
 
-	//nolint:depguard // external test package needs to import the module
 	"github.com/KEINOS/go-todotxt/todo"
 )
 

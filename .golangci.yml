@@ -4,18 +4,22 @@ version: "2"
 run:
   tests: true
   allow-parallel-runners: true
-
 linters:
   default: all
   exclusions:
     paths:
       - .github
+    rules:
+      - path: _test\.go
+        linters:
+          - funlen
   settings:
     depguard:
       rules:
         main:
           allow:
             - $gostd
+            - github.com/KEINOS/go-todotxt/todo # For texternal usage in tests
             - github.com/stretchr/testify # For readable testing purposes
             - github.com/pkg/errors
     varnamelen:

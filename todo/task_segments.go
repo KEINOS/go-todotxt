@@ -5,66 +5,98 @@ import (
 	"sort"
 )
 
-// Segments returns a segmented task string in todo.txt format. The order of
-// segments is the same as String().
-//
-//nolint:funlen, cyclop // length is 77 and complexity is 15 but leave it as is for now
-func (task *Task) Segments() []*TaskSegment {
-	var segs []*TaskSegment
+// segmentBuilder helps build task segments.
+type segmentBuilder struct {
+	segs []*TaskSegment
+}
 
-	newBasicTaskSeg := func(t TaskSegmentType, s string) *TaskSegment {
-		return &TaskSegment{
-			Type:      t,
-			Originals: []string{s},
-			Display:   s,
-		}
-	}
-	newTaskSeg := func(t TaskSegmentType, so, sd string) *TaskSegment {
-		return &TaskSegment{
-			Type:      t,
-			Originals: []string{so},
-			Display:   sd,
-		}
-	}
+// addBasic adds a basic segment.
+func (sb *segmentBuilder) addBasic(t TaskSegmentType, s string) {
+	sb.segs = append(sb.segs, &TaskSegment{
+		Type:      t,
+		Originals: []string{s},
+		Display:   s,
+	})
+}
 
+// addWithDisplay adds a segment with original and display.
+func (sb *segmentBuilder) addWithDisplay(t TaskSegmentType, orig, display string) {
+	sb.segs = append(sb.segs, &TaskSegment{
+		Type:      t,
+		Originals: []string{orig},
+		Display:   display,
+	})
+}
+
+// addTag adds a tag segment.
+func (sb *segmentBuilder) addTag(key, val string) {
+	sb.segs = append(sb.segs, &TaskSegment{
+		Type:      SegmentTag,
+		Originals: []string{key, val},
+		Display:   fmt.Sprintf("%s:%s", key, val),
+	})
+}
+
+// addCompletedSegments adds completed status and date segments.
+func (sb *segmentBuilder) addCompletedSegments(task *Task) {
 	if task.Completed {
-		segs = append(segs, newBasicTaskSeg(SegmentIsCompleted, "x"))
+		sb.addBasic(SegmentIsCompleted, "x")
 
 		if task.HasCompletedDate() {
-			segs = append(segs, newBasicTaskSeg(SegmentCompletedDate, task.CompletedDate.Format(DateLayout)))
+			sb.addBasic(SegmentCompletedDate, task.CompletedDate.Format(DateLayout))
 		}
 	}
+}
 
+// addPrioritySegment adds priority segment.
+func (sb *segmentBuilder) addPrioritySegment(task *Task) {
 	if task.HasPriority() && (!task.Completed || !RemoveCompletedPriority) {
-		segs = append(segs, newTaskSeg(SegmentPriority, task.Priority, fmt.Sprintf("(%s)", task.Priority)))
+		sb.addWithDisplay(SegmentPriority, task.Priority, fmt.Sprintf("(%s)", task.Priority))
 	}
+}
 
+// addCreatedDateSegment adds created date segment.
+func (sb *segmentBuilder) addCreatedDateSegment(task *Task) {
 	if task.HasCreatedDate() {
-		segs = append(segs, newBasicTaskSeg(SegmentCreatedDate, task.CreatedDate.Format(DateLayout)))
+		sb.addBasic(SegmentCreatedDate, task.CreatedDate.Format(DateLayout))
 	}
+}
 
-	segs = append(segs, newBasicTaskSeg(SegmentTodoText, task.Todo))
+// addTodoTextSegment adds todo text segment.
+func (sb *segmentBuilder) addTodoTextSegment(task *Task) {
+	sb.addBasic(SegmentTodoText, task.Todo)
+}
 
+// addContextSegments adds context segments.
+func (sb *segmentBuilder) addContextSegments(task *Task) {
 	if task.HasContexts() {
-		sort.Strings(task.Contexts)
+		sortedContexts := make([]string, len(task.Contexts))
+		copy(sortedContexts, task.Contexts)
+		sort.Strings(sortedContexts)
 
-		for _, context := range task.Contexts {
-			segs = append(segs, newTaskSeg(SegmentContext, context, "@"+context))
+		for _, context := range sortedContexts {
+			sb.addWithDisplay(SegmentContext, context, contextPrefix+context)
 		}
 	}
+}
 
+// addProjectSegments adds project segments.
+func (sb *segmentBuilder) addProjectSegments(task *Task) {
 	if task.HasProjects() {
-		sort.Strings(task.Projects)
+		sortedProjects := make([]string, len(task.Projects))
+		copy(sortedProjects, task.Projects)
+		sort.Strings(sortedProjects)
 
-		for _, project := range task.Projects {
-			segs = append(segs, newTaskSeg(SegmentProject, project, "+"+project))
+		for _, project := range sortedProjects {
+			sb.addWithDisplay(SegmentProject, project, projectPrefix+project)
 		}
 	}
+}
 
+// addTagSegments adds additional tag segments.
+func (sb *segmentBuilder) addTagSegments(task *Task) {
 	if task.HasAdditionalTags() {
-		// Sort map alphabetically by keys
 		keys := make([]string, 0, len(task.AdditionalTags))
-
 		for key := range task.AdditionalTags {
 			keys = append(keys, key)
 		}
@@ -72,19 +104,32 @@ func (task *Task) Segments() []*TaskSegment {
 		sort.Strings(keys)
 
 		for _, key := range keys {
-			val := task.AdditionalTags[key]
-
-			segs = append(segs, &TaskSegment{
-				Type:      SegmentTag,
-				Originals: []string{key, val},
-				Display:   fmt.Sprintf("%s:%s", key, val),
-			})
+			sb.addTag(key, task.AdditionalTags[key])
 		}
 	}
+}
 
+// addDueDateSegment adds due date segment.
+func (sb *segmentBuilder) addDueDateSegment(task *Task) {
 	if task.HasDueDate() {
-		segs = append(segs, newBasicTaskSeg(SegmentDueDate, "due:"+task.DueDate.Format(DateLayout)))
+		sb.addBasic(SegmentDueDate, duePrefix+task.DueDate.Format(DateLayout))
 	}
+}
 
-	return segs
+// Segments returns a segmented task string in todo.txt format. The order of
+// segments is the same as String.
+func (task *Task) Segments() []*TaskSegment {
+	//nolint:exhaustruct // segs field is initialized in add methods
+	segmentBuilder := &segmentBuilder{}
+
+	segmentBuilder.addCompletedSegments(task)
+	segmentBuilder.addPrioritySegment(task)
+	segmentBuilder.addCreatedDateSegment(task)
+	segmentBuilder.addTodoTextSegment(task)
+	segmentBuilder.addContextSegments(task)
+	segmentBuilder.addProjectSegments(task)
+	segmentBuilder.addTagSegments(task)
+	segmentBuilder.addDueDateSegment(task)
+
+	return segmentBuilder.segs
 }

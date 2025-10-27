@@ -29,6 +29,13 @@ const (
 	PermReadWriteExec = 0o755
 	// DateLayout is used for formatting time.Time into todo.txt date format and vice-versa.
 	DateLayout = "2006-01-02"
+
+	// contextPrefix is the prefix for contexts.
+	contextPrefix = "@"
+	// projectPrefix is the prefix for projects.
+	projectPrefix = "+"
+	// duePrefix is the prefix for due dates.
+	duePrefix = "due:"
 )
 
 // ----------------------------------------------------------------------------
@@ -38,8 +45,6 @@ const (
 // IgnoreComments can be set to 'false', in order to revert to a more standard
 // behaviour of todo.txt.
 // The todo.txt format does not define comments.
-//
-//nolint:gochecknoglobals // global variable is intentional
 var (
 	// IgnoreComments is used to switch ignoring of comments (lines starting
 	// with "#"). If this is set to 'false', then lines starting with "#" will
@@ -163,7 +168,11 @@ func lessStrings(a, b []string) bool {
 
 func parseAdditionalTags(txtOrig string, task *Task) error {
 	matches := addonTagRx.FindAllStringSubmatch(txtOrig, -1)
-	tags := make(map[string]string, len(matches))
+
+	var tags map[string]string
+	if len(matches) > 0 {
+		tags = make(map[string]string, len(matches))
+	}
 
 	for _, match := range matches {
 		key, value := match[2], match[3]
@@ -180,6 +189,11 @@ func parseAdditionalTags(txtOrig string, task *Task) error {
 			// add other tags rather than due date to the map
 			tags[key] = value
 		}
+	}
+
+	// If no additional tags were added (only due or none), set to nil
+	if tags != nil && len(tags) == 0 {
+		tags = nil
 	}
 
 	task.AdditionalTags = tags
