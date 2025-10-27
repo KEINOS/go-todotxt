@@ -16,16 +16,16 @@ jobs:
       OS: 'ubuntu-latest'
       GO: '1'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1'
+          go-version: '1.22'
           check-latest: true
 
       - run: go test -coverprofile coverage.txt ./...
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
