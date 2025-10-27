@@ -46,3 +46,5 @@ linters:
     - wsl
     # Disabled due to testing private function purpose
     - testpackage
+    # Disabled due to global variables for package-level settings
+    - gochecknoglobals
