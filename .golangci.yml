@@ -32,19 +32,14 @@ linters:
       # Optional list of variable names that should be ignored completely. (defaults to empty list)
       ignore-names:
         - err
-      # Optional list of variable declarations that should be ignored completely. (defaults to empty list)
-      # Entries must be in one of the following forms (see below for examples):
-      # - for variables, parameters, named return values, method receivers, or type parameters:
-      #   <name> <type>  (<type> can also be a pointer/slice/map/chan/...)
-      # - for constants: const <name>
-      ignore-decls:
-        - t testing.T
-        - e error
-        - i int
-        - j int
-        - ii int
-        - jj int
-        - T any
+        - e
+        - t
+        - tt
+        - i
+        - ii
+        - j
+        - jj
+        - p
   disable:
     # Disabled due to wsl deprecation and new wsl_v5
     - wsl
