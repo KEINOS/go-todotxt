@@ -17,9 +17,7 @@ import (
 //
 // It will return -1 if no inline comment is found.
 func getPosComment(p *Parsed) int {
-	// Search rune by rune to find the index of inline comment
-	commentFound := false
-	foundPos := -1
+	const notFound = -1
 
 	for index, char := range p.originalText {
 		if char != spec.PrefixComment.Rune() {
@@ -37,28 +35,16 @@ func getPosComment(p *Parsed) int {
 		}
 
 		if prevChar == spec.DelimSegments.Rune() {
-			// Found inline comment
-			foundPos = index
-			commentFound = true
-
-			break
+			return index
 		}
 
 		// Check if prevChar is in allowed control chars and treat as space
 		if slices.Contains(p.allowedCtrlChars, prevChar) {
-			// Found inline comment
-			foundPos = index
-			commentFound = true
-
-			break
+			return index
 		}
 	}
 
-	if !commentFound {
-		return -1
-	}
-
-	return foundPos
+	return notFound
 }
 
 // hasControlChars returns true if any control character is found in the text.
