@@ -19,17 +19,16 @@ type Parsed struct {
 
 	// The original task string.
 	originalText string
-	// Caches
-	inlineComment *string     // Cached inline comment.
-	isCommentLine *bool       // Cached comment line status.
-	isDone        *bool       // Cached done status.
-	indexSkip     *int        // Cached index to skip header parts.
-	indexComment  *int        // Cached index of the inline comment.
-	keyValueCache []KeyValue  // Cached key-value pairs.
-	keyValueInit  bool        // Whether keyValueCache has been initialized.
-	// Options
-	options          []Option // Options for parsing.
-	allowedCtrlChars []rune   // Allowed control characters.
+	// Caches and options
+	inlineComment    *string    // Cached inline comment.
+	isCommentLine    *bool      // Cached comment line status.
+	isDone           *bool      // Cached done status.
+	headerEndIndex   *int       // Cached index after completion marker and priority.
+	indexComment     *int       // Cached index of the inline comment.
+	keyValueCache    []KeyValue // Cached key-value pairs.
+	options          []Option   // Options for parsing.
+	allowedCtrlChars []rune     // Allowed control characters.
+	keyValueInit     bool       // Whether keyValueCache has been initialized.
 }
 
 // ----------------------------------------------------------------------------
@@ -104,16 +103,15 @@ func (p *Parsed) Parse(taskTxtUpdate string, opts ...Option) error {
 //  Helper Methods
 // ----------------------------------------------------------------------------
 
-// consumeHeadParts returns the index after the completion marker and priority.
-// Use this to skip optional header parts of the task.
-// It does not skip date tokens.
+// consumeHeadParts returns the index after completion marker and priority.
+// Date tokens are not skipped.
 func (p *Parsed) consumeHeadParts() int {
 	// Return cached value if available.
-	if p.indexSkip != nil {
-		return *p.indexSkip
+	if p.headerEndIndex != nil {
+		return *p.headerEndIndex
 	}
 
-	p.indexSkip = new(int)
+	p.headerEndIndex = new(int)
 	index := 0
 
 	// Skip completion marker "x" if it is the first segment.
@@ -126,9 +124,9 @@ func (p *Parsed) consumeHeadParts() int {
 		index++
 	}
 
-	*p.indexSkip = index
+	*p.headerEndIndex = index
 
-	return *p.indexSkip
+	return *p.headerEndIndex
 }
 
 // offsetAfterSegments returns the byte offset in the original text
@@ -170,7 +168,7 @@ func (p *Parsed) resetCaches() {
 	p.isCommentLine = nil
 	p.indexComment = nil
 	p.isDone = nil
-	p.indexSkip = nil
+	p.headerEndIndex = nil
 	p.keyValueCache = nil
 	p.keyValueInit = false
 }

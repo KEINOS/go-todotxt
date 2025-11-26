@@ -252,13 +252,8 @@ func (t *Task) AddProject(project string) error {
 //  Modify (update existing components)
 // ----------------------------------------------------------------------------
 
-// SetText overwrites the underlying raw task string with newText and marks
-// the task as dirty.
-//
-// This method is part of the deferred modification strategy. Instead of
-// re-parsing immediately, it updates the raw string and flags that the
-// structured data is out of sync (isDirty=true). The re-parsing is deferred
-// until Apply() is called.
+// SetText updates the raw task string and marks it dirty.
+// Call Apply() to re-parse and sync structured data.
 func (t *Task) SetText(newText string) {
 	t.Parsed.SetText(newText)
 	t.isDirty = true

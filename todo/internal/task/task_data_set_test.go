@@ -1001,9 +1001,9 @@ var dataWithKeyValue = []struct {
 	taskStr     string
 	key         string
 	value       string
-	expectOut   string            // task.String() on success
+	expectOut   string           // task.String() on success
 	expectKV    []parse.KeyValue // expected key-values after operation
-	errContains string            // error message to contain on failure
+	errContains string           // error message to contain on failure
 	shouldError bool
 }{
 	// Golden path - basic cases
@@ -1275,9 +1275,9 @@ var dataWithoutKeyValue = []struct {
 	title       string
 	taskStr     string
 	key         string
-	expectOut   string            // task.String() on success
+	expectOut   string           // task.String() on success
 	expectKV    []parse.KeyValue // expected key-values after operation
-	errContains string            // error message to contain on failure
+	errContains string           // error message to contain on failure
 	shouldError bool
 }{
 	// Golden path - basic cases

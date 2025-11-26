@@ -48,7 +48,7 @@ func (p *Parsed) HasInlineComment() bool {
 	}
 
 	// Search rune by rune to find the index of inline comment
-	foundPos := getPosComment(p)
+	foundPos := findInlineCommentPos(p)
 
 	*p.indexComment = foundPos // cache the position
 

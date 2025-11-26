@@ -13,10 +13,9 @@ import (
 // This file contains helper functions for parsing todo.txt lines to reduce
 // complexity in the main parsing logic.
 
-// getPosComment returns the position of inline comment in the original text.
-//
-// It will return -1 if no inline comment is found.
-func getPosComment(p *Parsed) int {
+// findInlineCommentPos returns the position of inline comment in the original text.
+// Returns -1 if not found.
+func findInlineCommentPos(p *Parsed) int {
 	const notFound = -1
 
 	for index, char := range p.originalText {

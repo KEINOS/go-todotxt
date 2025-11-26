@@ -68,20 +68,20 @@ func TestFromTaskString_caching(t *testing.T) {
 	// First calls to populate cache
 	isDoneFirst := parsed.IsDone()
 	isCommentFirst := parsed.IsCommentLine()
-	indexSkipFirst := parsed.consumeHeadParts()
+	headerIdxFirst := parsed.consumeHeadParts()
 	keyValuesFirst := parsed.KeyValues()
 
 	// Subsequent calls to verify cached results
 	isDoneSecond := parsed.IsDone()
 	isCommentSecond := parsed.IsCommentLine()
-	indexSkipSecond := parsed.consumeHeadParts()
+	headerIdxSecond := parsed.consumeHeadParts()
 	keyValuesSecond := parsed.KeyValues()
 
 	require.Equal(t, isDoneFirst, isDoneSecond,
 		"IsDone() should return consistent results with caching")
 	require.Equal(t, isCommentFirst, isCommentSecond,
 		"IsCommentLine() should return consistent results with caching")
-	require.Equal(t, indexSkipFirst, indexSkipSecond,
+	require.Equal(t, headerIdxFirst, headerIdxSecond,
 		"consumeHeadParts() should return consistent results with caching")
 	require.Equal(t, keyValuesFirst, keyValuesSecond,
 		"KeyValues() should return consistent results with caching")
@@ -92,10 +92,10 @@ func TestFromTaskString_caching(t *testing.T) {
 // ============================================================================
 
 // ----------------------------------------------------------------------------
-//  getPosComment()
+//  findInlineCommentPos()
 // ----------------------------------------------------------------------------
 
-func Test_getPosComment(t *testing.T) {
+func Test_findInlineCommentPos(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -150,10 +150,10 @@ func Test_getPosComment(t *testing.T) {
 			parsed.originalText = test.input
 			parsed.allowedCtrlChars = test.allowedRunes
 
-			actual := getPosComment(parsed)
+			actual := findInlineCommentPos(parsed)
 
 			require.Equalf(t, test.expected, actual,
-				"getPosComment() should return %d for input %q",
+				"findInlineCommentPos() should return %d for input %q",
 				test.expected, test.input)
 		})
 	}
@@ -864,7 +864,7 @@ func TestParsed_offsetAfterSegments(t *testing.T) {
 			inlineComment:    nil,
 			isCommentLine:    nil,
 			isDone:           nil,
-			indexSkip:        nil,
+			headerEndIndex:   nil,
 			indexComment:     nil,
 			keyValueCache:    nil,
 			keyValueInit:     false,
