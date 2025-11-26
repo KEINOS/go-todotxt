@@ -168,28 +168,28 @@ var dataPriority = []struct {
 		additionalTest: nil,
 		shouldFail:     false,
 	},
-	// i18n cases
+	// i18n cases (Chinese → Japanese → Korean alphabetical order)
+	{
+		title:          "Chinese task",
+		task:           "买牛奶 @商店",
+		priorityVal:    "A",
+		output:         "(A) 买牛奶 @商店",
+		additionalTest: nil,
+		shouldFail:     false,
+	},
 	{
 		title:          "Japanese task",
 		task:           "牛乳を買う @店",
-		priorityVal:    "A",
-		output:         "(A) 牛乳を買う @店",
+		priorityVal:    "B",
+		output:         "(B) 牛乳を買う @店",
 		additionalTest: nil,
 		shouldFail:     false,
 	},
 	{
 		title:          "Korean task",
 		task:           "우유 사기 @가게",
-		priorityVal:    "B",
-		output:         "(B) 우유 사기 @가게",
-		additionalTest: nil,
-		shouldFail:     false,
-	},
-	{
-		title:          "Chinese task",
-		task:           "买牛奶 @商店",
 		priorityVal:    "C",
-		output:         "(C) 买牛奶 @商店",
+		output:         "(C) 우유 사기 @가게",
 		additionalTest: nil,
 		shouldFail:     false,
 	},
@@ -451,7 +451,15 @@ var dataInsertAfter = []struct {
 		expectOut: "x 2024-01-15 2024-01-01 buy milk",
 		expectOK:  true,
 	},
-	// I18n cases
+	// I18n cases (Chinese → Japanese → Korean alphabetical order)
+	{
+		title:     "insert in Chinese task",
+		taskStr:   "买牛奶 @商店",
+		targetSeg: "@商店",
+		insertSeg: "@低脂肪",
+		expectOut: "买牛奶 @商店 @低脂肪",
+		expectOK:  true,
+	},
 	{
 		title:     "insert in Japanese task",
 		taskStr:   "牛乳を買う @店",
@@ -466,14 +474,6 @@ var dataInsertAfter = []struct {
 		targetSeg: "@가게",
 		insertSeg: "@저지방",
 		expectOut: "우유 사기 @가게 @저지방",
-		expectOK:  true,
-	},
-	{
-		title:     "insert in Chinese task",
-		taskStr:   "买牛奶 @商店",
-		targetSeg: "@商店",
-		insertSeg: "@低脂肪",
-		expectOut: "买牛奶 @商店 @低脂肪",
 		expectOK:  true,
 	},
 	// Edge/niche cases
