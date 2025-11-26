@@ -42,92 +42,6 @@ func WithAllowedCtrlChars(allowedCtrlChars []rune) Option {
 // ============================================================================
 //  Functional Options Pattern for task modifications.
 
-// WithPriority sets or updates the task priority.
-//
-// This is a convenience wrapper around SetPriority for use with New() or Apply().
-// Priority must be a single uppercase letter A-Z.
-//
-// Example:
-//
-//	task.Apply(WithPriority("A"))
-//
-// Note that when adding a priority, leading spaces in the task text are not
-// trimmed. The priority is simply inserted before any leading spaces.
-//
-// Example:
-//
-//	" Buy milk" --> WithPriority("A") --> "(A)  Buy milk"
-func WithPriority(priority string) Option {
-	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
-			return nil
-		}
-
-		return t.SetPriority(priority)
-	}
-}
-
-// WithoutPriority removes the task priority.
-func WithoutPriority() Option {
-	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
-			return nil
-		}
-
-		return t.RemovePriority()
-	}
-}
-
-// WithContext adds a context to the task.
-func WithContext(context string) Option {
-	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
-			return nil
-		}
-
-		return t.AddContext(context)
-	}
-}
-
-// WithoutContext removes a context from the task.
-func WithoutContext(context string) Option {
-	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
-			return nil
-		}
-
-		return t.RemoveContext(context)
-	}
-}
-
-// WithProject adds a project tag to the task.
-func WithProject(project string) Option {
-	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
-			return nil
-		}
-
-		return t.AddProject(project)
-	}
-}
-
-// WithoutProject removes a project from the task.
-func WithoutProject(project string) Option {
-	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
-			return nil
-		}
-
-		return t.RemoveProject(project)
-	}
-}
-
 // WithCompleted marks the task as done with an optional completion date.
 //
 // Usage patterns:
@@ -154,6 +68,18 @@ func WithCompleted(date ...string) Option {
 	}
 }
 
+// WithContext adds a context to the task.
+func WithContext(context string) Option {
+	return func(t *Task) error {
+		// When Parsed is nil, it is a pre-parse phase. Skip.
+		if t.Parsed == nil {
+			return nil
+		}
+
+		return t.AddContext(context)
+	}
+}
+
 // WithIncomplete marks the task as not done.
 func WithIncomplete() Option {
 	return func(t *Task) error {
@@ -163,6 +89,80 @@ func WithIncomplete() Option {
 		}
 
 		return t.Reopen()
+	}
+}
+
+// WithoutContext removes a context from the task.
+func WithoutContext(context string) Option {
+	return func(t *Task) error {
+		// When Parsed is nil, it is a pre-parse phase. Skip.
+		if t.Parsed == nil {
+			return nil
+		}
+
+		return t.RemoveContext(context)
+	}
+}
+
+// WithoutPriority removes the task priority.
+func WithoutPriority() Option {
+	return func(t *Task) error {
+		// When Parsed is nil, it is a pre-parse phase. Skip.
+		if t.Parsed == nil {
+			return nil
+		}
+
+		return t.RemovePriority()
+	}
+}
+
+// WithoutProject removes a project from the task.
+func WithoutProject(project string) Option {
+	return func(t *Task) error {
+		// When Parsed is nil, it is a pre-parse phase. Skip.
+		if t.Parsed == nil {
+			return nil
+		}
+
+		return t.RemoveProject(project)
+	}
+}
+
+// WithPriority sets or updates the task priority.
+//
+// This is a convenience wrapper around SetPriority for use with New() or Apply().
+// Priority must be a single uppercase letter A-Z.
+//
+// Example:
+//
+//	task.Apply(WithPriority("A"))
+//
+// Note that when adding a priority, leading spaces in the task text are not
+// trimmed. The priority is simply inserted before any leading spaces.
+//
+// Example:
+//
+//	" Buy milk" --> WithPriority("A") --> "(A)  Buy milk"
+func WithPriority(priority string) Option {
+	return func(t *Task) error {
+		// When Parsed is nil, it is a pre-parse phase. Skip.
+		if t.Parsed == nil {
+			return nil
+		}
+
+		return t.SetPriority(priority)
+	}
+}
+
+// WithProject adds a project tag to the task.
+func WithProject(project string) Option {
+	return func(t *Task) error {
+		// When Parsed is nil, it is a pre-parse phase. Skip.
+		if t.Parsed == nil {
+			return nil
+		}
+
+		return t.AddProject(project)
 	}
 }
 

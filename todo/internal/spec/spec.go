@@ -7,18 +7,18 @@ Only printable ASCII characters (0x20-0x7E) are valid markers.
 package spec
 
 const (
-	// PrefixProject is the marker for project tags.
-	PrefixProject Mark = '+'
-	// PrefixContext is the marker for context tags.
-	PrefixContext Mark = '@'
-	// PrefixComment is the marker for comments (extended syntax).
-	PrefixComment Mark = '#'
-	// MarkerDone is the marker indicating a completed task.
-	MarkerDone Mark = 'x'
-	// SepKeyValue is the separator for key-value pairs.
-	SepKeyValue Mark = ':'
 	// DelimSegments is the delimiter for segments in a task string.
 	DelimSegments Mark = ' '
+	// MarkerDone is the marker indicating a completed task.
+	MarkerDone Mark = 'x'
+	// PrefixComment is the marker for comments (extended syntax).
+	PrefixComment Mark = '#'
+	// PrefixContext is the marker for context tags.
+	PrefixContext Mark = '@'
+	// PrefixProject is the marker for project tags.
+	PrefixProject Mark = '+'
+	// SepKeyValue is the separator for key-value pairs.
+	SepKeyValue Mark = ':'
 )
 
 const (

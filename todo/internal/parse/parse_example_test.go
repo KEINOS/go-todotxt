@@ -311,10 +311,10 @@ func ExampleComponents_json() {
 	//   "projects": [
 	//     "chapelShelving"
 	//   ],
+	//   "posInlineComment": 68,
 	//   "isDone": true,
 	//   "isCommentLine": false,
-	//   "hasInlineComment": true,
-	//   "posInlineComment": 68
+	//   "hasInlineComment": true
 	// }
 }
 

@@ -96,10 +96,10 @@ func Example_output_as_JSON() {
 	//   "projects": [
 	//     "project"
 	//   ],
+	//   "posInlineComment": 95,
 	//   "isDone": true,
 	//   "isCommentLine": false,
-	//   "hasInlineComment": true,
-	//   "posInlineComment": 95
+	//   "hasInlineComment": true
 	// }
 }
 

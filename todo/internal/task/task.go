@@ -36,6 +36,13 @@ type Task struct {
 	isDirty   bool           // True if the task string has been modified.
 }
 
+// TimeNow is a variable holding time.Now for testing purposes.
+//
+// Replace this function in tests (monkey patch) to control time-dependent behavior:
+//
+//	task.TimeNow = func() time.Time { return time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC) }
+var TimeNow = time.Now
+
 // ============================================================================
 //  Constructor
 // ============================================================================
@@ -306,30 +313,6 @@ func (t *Task) SetPriority(priority string) error {
 	return nil
 }
 
-// TimeNow is a variable holding time.Now for testing purposes.
-//
-// Replace this function in tests (monkey patch) to control time-dependent behavior:
-//
-//	task.TimeNow = func() time.Time { return time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC) }
-var TimeNow = time.Now
-
-// Complete marks the task as completed.
-//
-// It adds 'x' marker at the beginning and sets the completion date to the
-// current time. Use `CompleteWithDate` to specify a custom completion date.
-//
-// If the task is already completed, it does nothing (idempotent).
-// To update the date of an already-completed task, use CompleteWithDate.
-func (t *Task) Complete() error {
-	if t.IsCompleted() {
-		return nil // Idempotent: preserve original date
-	}
-
-	now := TimeNow().Format(spec.DateFormat)
-
-	return t.CompleteWithDate(now)
-}
-
 // CompleteWithDate marks the task as completed with a specified date.
 //
 // Unlike Complete(), this method ALWAYS updates the completion date, even if
@@ -398,6 +381,23 @@ func (t *Task) CompleteWithDate(date string) error {
 	return nil
 }
 
+// Complete marks the task as completed.
+//
+// It adds 'x' marker at the beginning and sets the completion date to the
+// current time. Use `CompleteWithDate` to specify a custom completion date.
+//
+// If the task is already completed, it does nothing (idempotent).
+// To update the date of an already-completed task, use CompleteWithDate.
+func (t *Task) Complete() error {
+	if t.IsCompleted() {
+		return nil // Idempotent: preserve original date
+	}
+
+	now := TimeNow().Format(spec.DateFormat)
+
+	return t.CompleteWithDate(now)
+}
+
 // MarkDone marks the task as completed.
 //
 // It is an alias/shorthand for Complete. See Complete for details.
@@ -451,25 +451,18 @@ func (t *Task) MarkDirty() {
 //  Delete (remove components from the task)
 // ----------------------------------------------------------------------------
 
-// RemovePriority removes the priority from the task.
+// RemoveSegment removes the first occurrence of a segment from the task.
 //
 // The task is marked as dirty. Call Apply() to save the changes.
-func (t *Task) RemovePriority() error {
-	if t.isDirty {
-		err := t.ensureParsed()
-		if err != nil {
-			return wrapError(err, "failed to re-parse dirty task before removing priority")
-		}
+func (t *Task) RemoveSegment(segment string) error {
+	currentText := t.String()
+
+	newText, removed := removeSegmentWithBoundaries(currentText, segment)
+	if removed {
+		t.SetText(newText)
 	}
 
-	currentPriority := t.Priority()
-	if currentPriority == "" {
-		return nil // No priority to remove.
-	}
-
-	priorityMark := "(" + currentPriority + ")"
-
-	return t.RemoveSegment(priorityMark)
+	return nil
 }
 
 // RemoveContext removes a context tag from the task.
@@ -497,6 +490,27 @@ func (t *Task) RemoveContext(context string) error {
 	return t.RemoveSegment(tag)
 }
 
+// RemovePriority removes the priority from the task.
+//
+// The task is marked as dirty. Call Apply() to save the changes.
+func (t *Task) RemovePriority() error {
+	if t.isDirty {
+		err := t.ensureParsed()
+		if err != nil {
+			return wrapError(err, "failed to re-parse dirty task before removing priority")
+		}
+	}
+
+	currentPriority := t.Priority()
+	if currentPriority == "" {
+		return nil // No priority to remove.
+	}
+
+	priorityMark := "(" + currentPriority + ")"
+
+	return t.RemoveSegment(priorityMark)
+}
+
 // RemoveProject removes a project tag from the task.
 //
 // It is a shorthand for RemoveSegment with project normalization.
@@ -520,20 +534,6 @@ func (t *Task) RemoveProject(project string) error {
 	tag := spec.PrefixProject.String() + normalized
 
 	return t.RemoveSegment(tag)
-}
-
-// RemoveSegment removes the first occurrence of a segment from the task.
-//
-// The task is marked as dirty. Call Apply() to save the changes.
-func (t *Task) RemoveSegment(segment string) error {
-	currentText := t.String()
-
-	newText, removed := removeSegmentWithBoundaries(currentText, segment)
-	if removed {
-		t.SetText(newText)
-	}
-
-	return nil
 }
 
 // ----------------------------------------------------------------------------

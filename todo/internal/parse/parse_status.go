@@ -93,13 +93,6 @@ func (p *Parsed) IsCommentLine() bool {
 	return *p.isCommentLine
 }
 
-// IsDone returns true if the task is marked as completed (i.e., starts with 'x' segment).
-//
-// It is an alias of IsCompleted for backward compatibility.
-func (p *Parsed) IsDone() bool {
-	return p.IsCompleted()
-}
-
 // IsCompleted returns true if the task is marked as completed (i.e., starts with 'x' segment).
 func (p *Parsed) IsCompleted() bool {
 	if p.isDone != nil {
@@ -110,4 +103,11 @@ func (p *Parsed) IsCompleted() bool {
 	*p.isDone = len(p.Segments) > 0 && p.Segments[0].IsMarkCompletion()
 
 	return *p.isDone
+}
+
+// IsDone returns true if the task is marked as completed (i.e., starts with 'x' segment).
+//
+// It is an alias of IsCompleted for backward compatibility.
+func (p *Parsed) IsDone() bool {
+	return p.IsCompleted()
 }
