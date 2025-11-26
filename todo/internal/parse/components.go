@@ -13,8 +13,8 @@ type Components struct {
 	Comment          string            `json:"comment,omitempty"` // including '#'
 	Contexts         []string          `json:"contexts,omitempty"`
 	Projects         []string          `json:"projects,omitempty"`
+	PosInlineComment int               `json:"posInlineComment,omitempty"`
 	IsDone           bool              `json:"isDone"`
 	IsCommentLine    bool              `json:"isCommentLine"`
 	HasInlineComment bool              `json:"hasInlineComment,omitempty"`
-	PosInlineComment int               `json:"posInlineComment,omitempty"`
 }
