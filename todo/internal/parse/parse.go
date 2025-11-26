@@ -72,7 +72,7 @@ func (p *Parsed) Parse(taskTxtUpdate string, opts ...Option) error {
 	p.resetCaches()                // Clear all caches.
 	p.originalText = taskTxtUpdate // Set/update the original text.
 
-	if opts != nil {
+	if len(opts) > 0 {
 		p.options = opts // Override options.
 	}
 
