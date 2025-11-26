@@ -189,6 +189,8 @@ func (p *Parsed) Description() string {
 // Splits segments at the first ':' to form key-value pairs. The value part may
 // contain additional colons (e.g., "url:https://example.com").
 // Returns nil if no key-value pairs are found.
+//
+// Note: Results are cached after the first call.
 func (p *Parsed) KeyValues() map[string]string {
 	if p.IsCommentLine() {
 		return nil

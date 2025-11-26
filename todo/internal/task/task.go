@@ -306,7 +306,11 @@ func (t *Task) SetPriority(priority string) error {
 	return nil
 }
 
-// TimeNow is a copy of time.Now for easier testing (monkey patching).
+// TimeNow is a variable holding time.Now for testing purposes.
+//
+// Replace this function in tests (monkey patch) to control time-dependent behavior:
+//
+//	task.TimeNow = func() time.Time { return time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC) }
 var TimeNow = time.Now
 
 // Complete marks the task as completed.
@@ -314,8 +318,8 @@ var TimeNow = time.Now
 // It adds 'x' marker at the beginning and sets the completion date to the
 // current time. Use `CompleteWithDate` to specify a custom completion date.
 //
-// If the task is already completed, it does nothing.
-// The task is marked as dirty. Call Apply() to save the changes.
+// If the task is already completed, it does nothing (idempotent).
+// To update the date of an already-completed task, use CompleteWithDate.
 func (t *Task) Complete() error {
 	if t.IsCompleted() {
 		return nil // Idempotent: preserve original date
@@ -699,6 +703,7 @@ func removeSegmentWithBoundaries(text, segment string) (string, bool) {
 // replaceFirst replaces the first occurrence of a substring.
 //
 // It operates on the raw text to preserve formatting.
+// It is a thin wrapper around strings.Replace with count=1.
 func replaceFirst(s, old, replacement string) string {
 	const firstFound = 1
 
