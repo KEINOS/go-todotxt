@@ -5,28 +5,19 @@ import (
 )
 
 // Option is a functional option for configuring or modifying a Task.
-//
-// Options can be used during task creation with New() or for modifications via Apply().
-// They follow the functional options pattern for flexible configuration.
+// Use with New() or Apply().
 type Option func(*Task) error
 
 // ============================================================================
 //  Parse Options
 // ============================================================================
-//  Functional Options Pattern for task parsing.
 
-// WithAllowedCtrlChars is a wrapper of parse.WithAllowedCtrlChars(). It is an
-// option to allow control characters in the task string.
-//
-// By default, any control characters are considered disallowed including tab
-// characters. Enabling this option permits control characters in the input.
-//
-// It is the caller's responsibility to ensure that the input is safe. Use
-// with caution.
+// WithAllowedCtrlChars allows specified control characters in the task string.
+// By default, all control characters (including tabs) are disallowed.
+// Use with caution; caller must ensure input safety.
 func WithAllowedCtrlChars(allowedCtrlChars []rune) Option {
 	return func(t *Task) error {
-		// If Parsed is not yet set, we're in pre-parse phase
-		if t.Parsed == nil {
+		if t.Parsed == nil { // pre-parse phase
 			t.parseOpts = append(t.parseOpts, parse.WithAllowedCtrlChars(allowedCtrlChars))
 
 			return nil
@@ -40,18 +31,14 @@ func WithAllowedCtrlChars(allowedCtrlChars []rune) Option {
 // ============================================================================
 //  Modification Options
 // ============================================================================
-//  Functional Options Pattern for task modifications.
 
-// WithCompleted marks the task as done with an optional completion date.
-//
-// Usage patterns:
-//   - WithCompleted() - Uses current date
-//   - WithCompleted("") - Marks done without completion date (non-standard)
-//   - WithCompleted("2024-01-01") - Uses specified date
+// WithCompleted marks the task as done.
+//   - WithCompleted() uses current date
+//   - WithCompleted("") marks done without date (non-standard)
+//   - WithCompleted("2024-01-01") uses specified date
 func WithCompleted(date ...string) Option {
 	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
+		if t.Parsed == nil { // pre-parse phase
 			return nil
 		}
 
@@ -71,8 +58,7 @@ func WithCompleted(date ...string) Option {
 // WithContext adds a context to the task.
 func WithContext(context string) Option {
 	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
+		if t.Parsed == nil { // pre-parse phase
 			return nil
 		}
 
@@ -83,8 +69,7 @@ func WithContext(context string) Option {
 // WithIncomplete marks the task as not done.
 func WithIncomplete() Option {
 	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
+		if t.Parsed == nil { // pre-parse phase
 			return nil
 		}
 
@@ -95,8 +80,7 @@ func WithIncomplete() Option {
 // WithoutContext removes a context from the task.
 func WithoutContext(context string) Option {
 	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
+		if t.Parsed == nil { // pre-parse phase
 			return nil
 		}
 
@@ -107,8 +91,7 @@ func WithoutContext(context string) Option {
 // WithoutPriority removes the task priority.
 func WithoutPriority() Option {
 	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
+		if t.Parsed == nil { // pre-parse phase
 			return nil
 		}
 
@@ -119,8 +102,7 @@ func WithoutPriority() Option {
 // WithoutProject removes a project from the task.
 func WithoutProject(project string) Option {
 	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
+		if t.Parsed == nil { // pre-parse phase
 			return nil
 		}
 
@@ -128,25 +110,11 @@ func WithoutProject(project string) Option {
 	}
 }
 
-// WithPriority sets or updates the task priority.
-//
-// This is a convenience wrapper around SetPriority for use with New() or Apply().
-// Priority must be a single uppercase letter A-Z.
-//
-// Example:
-//
-//	task.Apply(WithPriority("A"))
-//
-// Note that when adding a priority, leading spaces in the task text are not
-// trimmed. The priority is simply inserted before any leading spaces.
-//
-// Example:
-//
-//	" Buy milk" --> WithPriority("A") --> "(A)  Buy milk"
+// WithPriority sets or updates the task priority (A-Z).
+// Leading spaces are preserved: " Buy milk" -> "(A)  Buy milk".
 func WithPriority(priority string) Option {
 	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
+		if t.Parsed == nil { // pre-parse phase
 			return nil
 		}
 
@@ -157,8 +125,7 @@ func WithPriority(priority string) Option {
 // WithProject adds a project tag to the task.
 func WithProject(project string) Option {
 	return func(t *Task) error {
-		// When Parsed is nil, it is a pre-parse phase. Skip.
-		if t.Parsed == nil {
+		if t.Parsed == nil { // pre-parse phase
 			return nil
 		}
 
@@ -166,23 +133,28 @@ func WithProject(project string) Option {
 	}
 }
 
-// // WithKeyValue sets a key-value pair tag.
-// func WithKeyValue(key, value string) Option {
-// 	return func(_ *Task) error {
-// 		// to be implemented
-// 		return nil
-// 		// return t.SetTag(key, value)
-// 	}
-// }
+// WithKeyValue sets a key-value pair tag (e.g., "due:2024-12-25").
+// Updates existing key or appends new one.
+func WithKeyValue(key, value string) Option {
+	return func(t *Task) error {
+		if t.Parsed == nil { // pre-parse phase
+			return nil
+		}
 
-// // WithoutKeyValue removes the key-value pair tag.
-// func WithoutKeyValue(key string) Option {
-// 	return func(_ *Task) error {
-// 		// to be implemented
-// 		return nil
-// 		// return t.RemoveTag(key)
-// 	}
-// }
+		return t.SetTag(key, value)
+	}
+}
+
+// WithoutKeyValue removes a key-value pair tag by key name.
+func WithoutKeyValue(key string) Option {
+	return func(t *Task) error {
+		if t.Parsed == nil { // pre-parse phase
+			return nil
+		}
+
+		return t.RemoveTag(key)
+	}
+}
 
 // // WithDueDate sets the due date.
 // func WithDueDate(date string) Option {

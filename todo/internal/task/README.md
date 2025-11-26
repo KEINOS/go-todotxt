@@ -37,9 +37,18 @@ returns the wrapped error.
 
 - `AddContext(context string)` normalizes and adds an `@context`, skipping
     comment lines and duplicate tags.
+- `RemoveContext(context string)` removes an `@context` tag from the task.
+- `AddProject(project string)` normalizes and adds a `+project`, skipping
+    comment lines and duplicate tags.
+- `RemoveProject(project string)` removes a `+project` tag from the task.
 - `SetPriority(priority string)` validates an `(A)` style mark and inserts or
     replaces it in the correct position.
 - `RemovePriority()` removes any existing priority mark.
+- `SetTag(key, value string)` sets or updates a key-value pair tag
+    (e.g., `due:2024-12-25`).
+- `RemoveTag(key string)` removes a key-value pair tag by key name.
+- `Complete()` / `CompleteWithDate(date string)` marks the task as done.
+- `Reopen()` marks the task as incomplete.
 
 Most mutators mark the task dirty by updating the raw text. Call `Apply()` after
 batching your edits to refresh the parsed view.

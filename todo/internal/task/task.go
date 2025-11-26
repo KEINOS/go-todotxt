@@ -536,6 +536,99 @@ func (t *Task) RemoveProject(project string) error {
 	return t.RemoveSegment(tag)
 }
 
+// SetTag sets a key-value pair tag (e.g., "due:2024-12-25").
+// Updates existing key or appends new one.
+func (t *Task) SetTag(key, value string) error {
+	if t.isDirty {
+		err := t.ensureParsed()
+		if err != nil {
+			return wrapError(err, "failed to re-parse dirty task before setting tag")
+		}
+	}
+
+	if t.IsCommentLine() {
+		return nil
+	}
+
+	// Validate key and value
+	key = strings.TrimSpace(key)
+	if key == "" {
+		return newError("invalid key-value: key cannot be empty")
+	}
+
+	if strings.ContainsFunc(key, unicode.IsSpace) {
+		return newError("invalid key-value: key cannot contain whitespace")
+	}
+
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return newError("invalid key-value: value cannot be empty")
+	}
+
+	if strings.ContainsFunc(value, unicode.IsSpace) {
+		return newError("invalid key-value: value cannot contain whitespace")
+	}
+
+	newTag := key + spec.SepKeyValue.String() + value
+
+	// Check if the key already exists and update it
+	existingValues := t.KeyValues()
+	if existingValues != nil {
+		if oldValue, exists := existingValues[key]; exists {
+			oldTag := key + spec.SepKeyValue.String() + oldValue
+			currentText := t.String()
+			newText := replaceFirst(currentText, oldTag, newTag)
+			t.SetText(newText)
+
+			return nil
+		}
+	}
+
+	// Key doesn't exist, append new tag
+	return t.AppendSegment(newTag)
+}
+
+// RemoveTag removes a key-value pair tag by key name.
+// Does nothing if key does not exist.
+func (t *Task) RemoveTag(key string) error {
+	if t.isDirty {
+		err := t.ensureParsed()
+		if err != nil {
+			return wrapError(err, "failed to re-parse dirty task before removing tag")
+		}
+	}
+
+	if t.IsCommentLine() {
+		return nil
+	}
+
+	// Validate key
+	key = strings.TrimSpace(key)
+	if key == "" {
+		return newError("invalid key-value: key cannot be empty")
+	}
+
+	if strings.ContainsFunc(key, unicode.IsSpace) {
+		return newError("invalid key-value: key cannot contain whitespace")
+	}
+
+	// Check if the key exists
+	existingValues := t.KeyValues()
+	if existingValues == nil {
+		return nil // No key-values exist
+	}
+
+	oldValue, exists := existingValues[key]
+	if !exists {
+		return nil // Key not found
+	}
+
+	// Remove the key-value tag
+	oldTag := key + spec.SepKeyValue.String() + oldValue
+
+	return t.RemoveSegment(oldTag)
+}
+
 // ----------------------------------------------------------------------------
 //  Apply Changes (finalize modifications)
 // ----------------------------------------------------------------------------

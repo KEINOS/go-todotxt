@@ -987,3 +987,492 @@ var dataNormalizeTag = []struct {
 		shouldErr: true,
 	},
 }
+
+// ----------------------------------------------------------------------------
+//  WithKeyValue()
+// ----------------------------------------------------------------------------
+
+// Test data for WithKeyValue() option while New() or Apply().
+var dataWithKeyValue = []struct {
+	title       string
+	taskStr     string
+	key         string
+	value       string
+	expectOut   string            // task.String() on success
+	expectKV    map[string]string // expected key-values after operation
+	errContains string            // error message to contain on failure
+	shouldError bool
+}{
+	// Golden path - basic cases
+	{
+		title:       "add new key-value to simple task",
+		taskStr:     "buy milk",
+		key:         "due",
+		value:       "2024-12-25",
+		expectOut:   "buy milk due:2024-12-25",
+		expectKV:    map[string]string{"due": "2024-12-25"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "add key-value to task with existing tags",
+		taskStr:     "buy milk @store +shopping",
+		key:         "priority",
+		value:       "high",
+		expectOut:   "buy milk @store +shopping priority:high",
+		expectKV:    map[string]string{"priority": "high"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "update existing key-value",
+		taskStr:     "buy milk due:2024-01-01",
+		key:         "due",
+		value:       "2024-12-25",
+		expectOut:   "buy milk due:2024-12-25",
+		expectKV:    map[string]string{"due": "2024-12-25"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "add multiple key-values",
+		taskStr:     "buy milk due:2024-12-25",
+		key:         "priority",
+		value:       "high",
+		expectOut:   "buy milk due:2024-12-25 priority:high",
+		expectKV:    map[string]string{"due": "2024-12-25", "priority": "high"},
+		errContains: "",
+		shouldError: false,
+	},
+	// Edge cases - special formats
+	{
+		title:       "key-value with URL-like value (contains colons)",
+		taskStr:     "check website",
+		key:         "url",
+		value:       "https://example.com",
+		expectOut:   "check website url:https://example.com",
+		expectKV:    map[string]string{"url": "https://example.com"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "key-value with numeric value",
+		taskStr:     "exercise routine",
+		key:         "reps",
+		value:       "30",
+		expectOut:   "exercise routine reps:30",
+		expectKV:    map[string]string{"reps": "30"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "key-value with time format",
+		taskStr:     "meeting",
+		key:         "time",
+		value:       "14:30",
+		expectOut:   "meeting time:14:30",
+		expectKV:    map[string]string{"time": "14:30"},
+		errContains: "",
+		shouldError: false,
+	},
+	// Edge cases - task structure
+	{
+		title:       "add to completed task",
+		taskStr:     "x 2024-01-15 buy milk",
+		key:         "due",
+		value:       "2024-01-10",
+		expectOut:   "x 2024-01-15 buy milk due:2024-01-10",
+		expectKV:    map[string]string{"due": "2024-01-10"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "add to task with priority",
+		taskStr:     "(A) buy milk",
+		key:         "due",
+		value:       "2024-12-25",
+		expectOut:   "(A) buy milk due:2024-12-25",
+		expectKV:    map[string]string{"due": "2024-12-25"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "preserve inline comment position",
+		taskStr:     "buy milk # shopping list",
+		key:         "due",
+		value:       "2024-12-25",
+		expectOut:   "buy milk due:2024-12-25 # shopping list",
+		expectKV:    map[string]string{"due": "2024-12-25"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "update key-value preserving other segments",
+		taskStr:     "buy milk @store due:2024-01-01 +shopping",
+		key:         "due",
+		value:       "2024-12-25",
+		expectOut:   "buy milk @store due:2024-12-25 +shopping",
+		expectKV:    map[string]string{"due": "2024-12-25"},
+		errContains: "",
+		shouldError: false,
+	},
+	// Edge cases - whitespace handling
+	{
+		title:       "trim key whitespace",
+		taskStr:     "buy milk",
+		key:         "  due  ",
+		value:       "2024-12-25",
+		expectOut:   "buy milk due:2024-12-25",
+		expectKV:    map[string]string{"due": "2024-12-25"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "trim value whitespace",
+		taskStr:     "buy milk",
+		key:         "due",
+		value:       "  2024-12-25  ",
+		expectOut:   "buy milk due:2024-12-25",
+		expectKV:    map[string]string{"due": "2024-12-25"},
+		errContains: "",
+		shouldError: false,
+	},
+	// Comment line handling
+	{
+		title:       "ignore on comment line",
+		taskStr:     "# this is a comment",
+		key:         "due",
+		value:       "2024-12-25",
+		expectOut:   "# this is a comment",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	// I18n cases
+	{
+		title:       "Chinese key-value",
+		taskStr:     "买牛奶",
+		key:         "截止日期",
+		value:       "2024-12-25",
+		expectOut:   "买牛奶 截止日期:2024-12-25",
+		expectKV:    map[string]string{"截止日期": "2024-12-25"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "Japanese key-value",
+		taskStr:     "牛乳を買う",
+		key:         "期限",
+		value:       "2024-12-25",
+		expectOut:   "牛乳を買う 期限:2024-12-25",
+		expectKV:    map[string]string{"期限": "2024-12-25"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "Korean key-value",
+		taskStr:     "우유 사기",
+		key:         "마감일",
+		value:       "2024-12-25",
+		expectOut:   "우유 사기 마감일:2024-12-25",
+		expectKV:    map[string]string{"마감일": "2024-12-25"},
+		errContains: "",
+		shouldError: false,
+	},
+	// Error cases - key validation
+	{
+		title:       "reject empty key",
+		taskStr:     "buy milk",
+		key:         "",
+		value:       "2024-12-25",
+		expectOut:   "",
+		expectKV:    nil,
+		errContains: "key cannot be empty",
+		shouldError: true,
+	},
+	{
+		title:       "reject whitespace only key",
+		taskStr:     "buy milk",
+		key:         "   ",
+		value:       "2024-12-25",
+		expectOut:   "",
+		expectKV:    nil,
+		errContains: "key cannot be empty",
+		shouldError: true,
+	},
+	{
+		title:       "reject key with whitespace",
+		taskStr:     "buy milk",
+		key:         "due date",
+		value:       "2024-12-25",
+		expectOut:   "",
+		expectKV:    nil,
+		errContains: "key cannot contain whitespace",
+		shouldError: true,
+	},
+	{
+		title:       "reject key with tab",
+		taskStr:     "buy milk",
+		key:         "due\tdate",
+		value:       "2024-12-25",
+		expectOut:   "",
+		expectKV:    nil,
+		errContains: "key cannot contain whitespace",
+		shouldError: true,
+	},
+	// Error cases - value validation
+	{
+		title:       "reject empty value",
+		taskStr:     "buy milk",
+		key:         "due",
+		value:       "",
+		expectOut:   "",
+		expectKV:    nil,
+		errContains: "value cannot be empty",
+		shouldError: true,
+	},
+	{
+		title:       "reject whitespace only value",
+		taskStr:     "buy milk",
+		key:         "due",
+		value:       "   ",
+		expectOut:   "",
+		expectKV:    nil,
+		errContains: "value cannot be empty",
+		shouldError: true,
+	},
+	{
+		title:       "reject value with whitespace",
+		taskStr:     "buy milk",
+		key:         "due",
+		value:       "2024 12 25",
+		expectOut:   "",
+		expectKV:    nil,
+		errContains: "value cannot contain whitespace",
+		shouldError: true,
+	},
+	{
+		title:       "reject value with newline",
+		taskStr:     "buy milk",
+		key:         "note",
+		value:       "line1\nline2",
+		expectOut:   "",
+		expectKV:    nil,
+		errContains: "value cannot contain whitespace",
+		shouldError: true,
+	},
+}
+
+// ----------------------------------------------------------------------------
+//  WithoutKeyValue()
+// ----------------------------------------------------------------------------
+
+// Test data for WithoutKeyValue() option while New() or Apply().
+var dataWithoutKeyValue = []struct {
+	title       string
+	taskStr     string
+	key         string
+	expectOut   string            // task.String() on success
+	expectKV    map[string]string // expected key-values after operation
+	errContains string            // error message to contain on failure
+	shouldError bool
+}{
+	// Golden path - basic cases
+	{
+		title:       "remove existing key-value",
+		taskStr:     "buy milk due:2024-12-25",
+		key:         "due",
+		expectOut:   "buy milk",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "remove one of multiple key-values",
+		taskStr:     "buy milk due:2024-12-25 priority:high",
+		key:         "due",
+		expectOut:   "buy milk priority:high",
+		expectKV:    map[string]string{"priority": "high"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "remove key-value preserving other segments",
+		taskStr:     "buy milk @store due:2024-12-25 +shopping",
+		key:         "due",
+		expectOut:   "buy milk @store +shopping",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	// Edge cases - non-existent key
+	{
+		title:       "no change when key not found",
+		taskStr:     "buy milk due:2024-12-25",
+		key:         "priority",
+		expectOut:   "buy milk due:2024-12-25",
+		expectKV:    map[string]string{"due": "2024-12-25"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "no change when task has no key-values",
+		taskStr:     "buy milk @store +shopping",
+		key:         "due",
+		expectOut:   "buy milk @store +shopping",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	// Edge cases - special formats
+	{
+		title:       "remove key-value with URL-like value",
+		taskStr:     "check website url:https://example.com",
+		key:         "url",
+		expectOut:   "check website",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "remove key-value with colons in value",
+		taskStr:     "meeting time:14:30:00",
+		key:         "time",
+		expectOut:   "meeting",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	// Edge cases - task structure
+	{
+		title:       "remove from completed task",
+		taskStr:     "x 2024-01-15 buy milk due:2024-01-10",
+		key:         "due",
+		expectOut:   "x 2024-01-15 buy milk",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "remove from task with priority",
+		taskStr:     "(A) buy milk due:2024-12-25",
+		key:         "due",
+		expectOut:   "(A) buy milk",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "remove preserving inline comment",
+		taskStr:     "buy milk due:2024-12-25 # shopping list",
+		key:         "due",
+		expectOut:   "buy milk # shopping list",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	// Edge cases - whitespace handling
+	{
+		title:       "trim key whitespace",
+		taskStr:     "buy milk due:2024-12-25",
+		key:         "  due  ",
+		expectOut:   "buy milk",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	// Edge cases - similar key names
+	{
+		title:       "avoid removing key sharing prefix",
+		taskStr:     "watch overdue:2024-01-01 movies",
+		key:         "due",
+		expectOut:   "watch overdue:2024-01-01 movies",
+		expectKV:    map[string]string{"overdue": "2024-01-01"},
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "remove exact key match only",
+		taskStr:     "task due:2024-01-01 dueDate:2024-02-01",
+		key:         "due",
+		expectOut:   "task dueDate:2024-02-01",
+		expectKV:    map[string]string{"dueDate": "2024-02-01"},
+		errContains: "",
+		shouldError: false,
+	},
+	// Comment line handling
+	{
+		title:       "ignore on comment line",
+		taskStr:     "# comment due:2024-12-25",
+		key:         "due",
+		expectOut:   "# comment due:2024-12-25",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	// I18n cases
+	{
+		title:       "remove Chinese key-value",
+		taskStr:     "买牛奶 截止日期:2024-12-25",
+		key:         "截止日期",
+		expectOut:   "买牛奶",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "remove Japanese key-value",
+		taskStr:     "牛乳を買う 期限:2024-12-25",
+		key:         "期限",
+		expectOut:   "牛乳を買う",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	{
+		title:       "remove Korean key-value",
+		taskStr:     "우유 사기 마감일:2024-12-25",
+		key:         "마감일",
+		expectOut:   "우유 사기",
+		expectKV:    nil,
+		errContains: "",
+		shouldError: false,
+	},
+	// Error cases - key validation
+	{
+		title:       "reject empty key",
+		taskStr:     "buy milk due:2024-12-25",
+		key:         "",
+		expectOut:   "",
+		expectKV:    nil,
+		errContains: "key cannot be empty",
+		shouldError: true,
+	},
+	{
+		title:       "reject whitespace only key",
+		taskStr:     "buy milk due:2024-12-25",
+		key:         "   ",
+		expectOut:   "",
+		expectKV:    nil,
+		errContains: "key cannot be empty",
+		shouldError: true,
+	},
+	{
+		title:       "reject key with whitespace",
+		taskStr:     "buy milk due:2024-12-25",
+		key:         "due date",
+		expectOut:   "",
+		expectKV:    nil,
+		errContains: "key cannot contain whitespace",
+		shouldError: true,
+	},
+	{
+		title:       "reject key with tab",
+		taskStr:     "buy milk due:2024-12-25",
+		key:         "due\tdate",
+		expectOut:   "",
+		expectKV:    nil,
+		errContains: "key cannot contain whitespace",
+		shouldError: true,
+	},
+}

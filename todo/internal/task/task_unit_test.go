@@ -870,6 +870,158 @@ func TestWithCompleted_error_cases(t *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
+//  WithKeyValue()
+// ----------------------------------------------------------------------------
+
+func TestWithKeyValue(t *testing.T) {
+	t.Parallel()
+
+	for index, test := range dataWithKeyValue {
+		title := fmt.Sprintf("Test #%d: %s", index+1, test.title)
+
+		t.Run(title+" (during New)", func(t *testing.T) {
+			t.Parallel()
+
+			tsk, err := New(test.taskStr, WithKeyValue(test.key, test.value))
+
+			if test.shouldError {
+				require.Error(t, err)
+				require.ErrorContains(t, err, test.errContains,
+					"error message does not contain expected text")
+				require.Nil(t, tsk)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, test.expectOut, tsk.String())
+				require.Equal(t, test.expectKV, tsk.KeyValues(),
+					"parsed key-values do not match expected")
+				require.False(t, tsk.IsDirty(),
+					"task should not be marked dirty after New")
+			}
+		})
+
+		t.Run(title+" (during Apply)", func(t *testing.T) {
+			t.Parallel()
+
+			tsk, err := New(test.taskStr)
+			require.NoError(t, err)
+
+			err = tsk.Apply(WithKeyValue(test.key, test.value))
+
+			if test.shouldError {
+				require.Error(t, err)
+				require.ErrorContains(t, err, test.errContains,
+					"error message does not contain expected text")
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, test.expectOut, tsk.String())
+				require.Equal(t, test.expectKV, tsk.KeyValues(),
+					"parsed key-values do not match expected")
+				require.False(t, tsk.IsDirty(),
+					"task should not be marked dirty after Apply")
+			}
+		})
+	}
+
+	t.Run("failure with bad option before WithKeyValue", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk")
+		require.NoError(t, err)
+
+		WithBadBehaviorOption := func(tsk2 *Task) error {
+			tsk2.SetText(tsk2.String() + "\t")
+			tsk2.isDirty = true
+
+			return nil
+		}
+
+		err = tsk.Apply(
+			WithBadBehaviorOption,
+			WithKeyValue("due", "2024-12-25"),
+		)
+		require.Error(t, err)
+
+		require.ErrorContains(t, err, "failed to re-parse dirty task before setting tag")
+	})
+}
+
+// ----------------------------------------------------------------------------
+//  WithoutKeyValue()
+// ----------------------------------------------------------------------------
+
+func TestWithoutKeyValue(t *testing.T) {
+	t.Parallel()
+
+	for index, test := range dataWithoutKeyValue {
+		title := fmt.Sprintf("Test #%d: %s", index+1, test.title)
+
+		t.Run(title+" (during New)", func(t *testing.T) {
+			t.Parallel()
+
+			tsk, err := New(test.taskStr, WithoutKeyValue(test.key))
+
+			if test.shouldError {
+				require.Error(t, err)
+				require.ErrorContains(t, err, test.errContains,
+					"error message does not contain expected text")
+				require.Nil(t, tsk)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, test.expectOut, tsk.String())
+				require.Equal(t, test.expectKV, tsk.KeyValues(),
+					"parsed key-values do not match expected")
+				require.False(t, tsk.IsDirty(),
+					"task should not be marked dirty after New")
+			}
+		})
+
+		t.Run(title+" (during Apply)", func(t *testing.T) {
+			t.Parallel()
+
+			tsk, err := New(test.taskStr)
+			require.NoError(t, err)
+
+			err = tsk.Apply(WithoutKeyValue(test.key))
+
+			if test.shouldError {
+				require.Error(t, err)
+				require.ErrorContains(t, err, test.errContains,
+					"error message does not contain expected text")
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, test.expectOut, tsk.String())
+				require.Equal(t, test.expectKV, tsk.KeyValues(),
+					"parsed key-values do not match expected")
+				require.False(t, tsk.IsDirty(),
+					"task should not be marked dirty after Apply")
+			}
+		})
+	}
+
+	t.Run("failure with bad option before WithoutKeyValue", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk due:2024-12-25")
+		require.NoError(t, err)
+
+		WithBadBehaviorOption := func(tsk2 *Task) error {
+			tsk2.SetText(tsk2.String() + "\t")
+			tsk2.isDirty = true
+
+			return nil
+		}
+
+		err = tsk.Apply(
+			WithBadBehaviorOption,
+			WithoutKeyValue("due"),
+		)
+		require.Error(t, err)
+
+		require.ErrorContains(t, err, "failed to re-parse dirty task before removing tag")
+	})
+}
+
+// ----------------------------------------------------------------------------
 //  WithIncomplete()
 // ----------------------------------------------------------------------------
 

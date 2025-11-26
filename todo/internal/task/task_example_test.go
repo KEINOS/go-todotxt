@@ -11,16 +11,12 @@ import (
 )
 
 // ============================================================================
-//  Basic Examples for `task` package
+//  Basic Examples
 // ============================================================================
 
-// This example demonstrates creating a task from a todo.txt formatted string
-// and retrieving its components.
+// Retrieval methods are inherited from embedded parse.Parsed (read-only).
 //
-// Note that most retrieval methods are inherited from the embedded parse.Parsed
-// struct. These methods are read-only and do not modify the task.
-//
-//nolint:lll // overlong lines but acceptable in examples
+//nolint:lll // acceptable in examples
 func Example() {
 	taskText := "x (A) 2016-05-20 2016-05-18 this is a completed task with " +
 		"+project and @context due:2016-05-25 # with an inline-comment"
@@ -103,10 +99,7 @@ func Example_output_as_JSON() {
 	// }
 }
 
-// This example demonstrates creating a task with initial options.
-// It is helpful to ensure to keep the task format.
-//
-// For other "task.With*" options, refer to the examples of respective functions.
+// Creating a task with initial options.
 func Example_create_new_task_with_options() {
 	taskText := "buy mango and banana"
 
@@ -170,16 +163,11 @@ func Example_use_user_custom_option() {
 }
 
 // ============================================================================
-//  Examples for Constructor Functions
+//  Constructor Examples
 // ============================================================================
 
-// This example demonstrates creating a task and then modifying its components
-// using setter methods.
-//
-// To change components in one-go, use `task.Task.Apply()` with setter options.
-//
-// Note: After applying setter methods, you must call Apply() to reparse the
-// task and finalize the changes.
+// Creating a task and modifying it with setter methods.
+// Call Apply() after modifications to finalize changes.
 func ExampleNew_create_new_task_then_manage_components() {
 	taskText := "buy Mac mini"
 
@@ -212,11 +200,10 @@ func ExampleNew_create_new_task_then_manage_components() {
 	// Current task String: (A) buy Mac mini @M4 +shopping
 }
 
-// By default, control characters including tab (`\t`) are not allowed in the
-// task string. To allow them, you must explicitly specify the allowed control
-// characters using the WithAllowedCtrlChars option.
+// Control characters (including tabs) are disallowed by default.
+// Use WithAllowedCtrlChars to permit them.
 //
-//nolint:lll // overlong lines but acceptable in examples
+//nolint:lll // acceptable in examples
 func ExampleNew_allow_tabs_in_task_text_to_create_with_parse_option() {
 	taskText := "x\t(A)\t2016-05-20 2016-05-18 this is a completed task with " +
 		"+project and @context due:2016-05-25 # withan inline-comment"
@@ -251,12 +238,8 @@ func ExampleNew_allow_tabs_in_task_text_to_create_with_parse_option() {
 }
 
 // ============================================================================
-//  Examples for Task Methods
+//  Task Method Examples
 // ============================================================================
-
-// ----------------------------------------------------------------------------
-//  Task.IsDirty()
-// ----------------------------------------------------------------------------
 
 func ExampleTask_IsDirty() {
 	taskText := "get dirty"
@@ -296,11 +279,7 @@ func ExampleTask_IsDirty() {
 	// IsDirty (after MarkDirty): true
 }
 
-// ----------------------------------------------------------------------------
-//  Task.MarkDone()
-// ----------------------------------------------------------------------------
-
-// MarkDone is an alias for `Task.Complete()` that uses the current date.
+// MarkDone is an alias for Complete() using current date.
 func ExampleTask_MarkDone() {
 	tsk, err := task.New("buy milk")
 	if err != nil {
@@ -328,10 +307,6 @@ func ExampleTask_MarkDone() {
 	// Description: buy milk
 	// Completed date matches today: true
 }
-
-// ----------------------------------------------------------------------------
-//  Task.Complete()
-// ----------------------------------------------------------------------------
 
 func ExampleTask_Complete() {
 	tsk, err := task.New("buy milk")
@@ -364,10 +339,6 @@ func ExampleTask_Complete() {
 	// Description: buy milk
 	// Completed date matches today: true
 }
-
-// ----------------------------------------------------------------------------
-//  Task.CompleteWithDate()
-// ----------------------------------------------------------------------------
 
 func ExampleTask_CompleteWithDate_specific() {
 	tsk, err := task.New("buy milk")
@@ -415,13 +386,6 @@ func ExampleTask_CompleteWithDate_noDate() {
 	// Task String: x buy milk
 }
 
-// ----------------------------------------------------------------------------
-//  Task.SetPriority()
-// ----------------------------------------------------------------------------
-
-// ExampleTask_SetPriority demonstrates setting task priority.
-//
-// After calling SetPriority, you must call Update() to apply the changes.
 func ExampleTask_SetPriority() {
 	taskText := "buy milk @grocery +shopping"
 
@@ -449,7 +413,6 @@ func ExampleTask_SetPriority() {
 	// Priority: A
 }
 
-// ExampleTask_SetPriority_updateExisting demonstrates updating an existing priority.
 func ExampleTask_SetPriority_updateExisting() {
 	taskText := "(B) buy milk @grocery +shopping"
 
@@ -481,7 +444,6 @@ func ExampleTask_SetPriority_updateExisting() {
 	// Priority: A
 }
 
-// ExampleTask_SetPriority_withCompletedTask demonstrates setting priority on a completed task.
 func ExampleTask_SetPriority_withCompletedTask() {
 	taskText := "x 2024-01-15 buy milk"
 
@@ -508,13 +470,6 @@ func ExampleTask_SetPriority_withCompletedTask() {
 	// Priority: A
 }
 
-// ----------------------------------------------------------------------------
-//  Task.RemovePriority()
-// ----------------------------------------------------------------------------
-
-// ExampleTask_RemovePriority demonstrates removing priority from a task.
-//
-// After calling RemovePriority, you must call Update() to apply the changes.
 func ExampleTask_RemovePriority() {
 	taskText := "(A) buy milk @grocery +shopping"
 
@@ -546,11 +501,6 @@ func ExampleTask_RemovePriority() {
 	// Priority:
 }
 
-// ----------------------------------------------------------------------------
-//  Task.AppendSegment()
-// ----------------------------------------------------------------------------
-
-// ExampleTask_AppendSegment demonstrates appending a segment to a task.
 func ExampleTask_AppendSegment() {
 	tsk, err := task.New("buy milk")
 	if err != nil {
@@ -571,11 +521,6 @@ func ExampleTask_AppendSegment() {
 	// Output: buy milk @home
 }
 
-// ----------------------------------------------------------------------------
-//  Task.RemoveSegment()
-// ----------------------------------------------------------------------------
-
-// ExampleTask_RemoveSegment demonstrates removing a segment from a task.
 func ExampleTask_RemoveSegment() {
 	tsk, err := task.New("buy milk @home +shopping")
 	if err != nil {
@@ -601,10 +546,6 @@ func ExampleTask_RemoveSegment() {
 	// Output: buy milk
 }
 
-// ----------------------------------------------------------------------------
-//  Task.AddContext()
-// ----------------------------------------------------------------------------
-
 func ExampleTask_AddContext() {
 	tsk, err := task.New("buy milk +shopping")
 	if err != nil {
@@ -624,10 +565,6 @@ func ExampleTask_AddContext() {
 	fmt.Println(tsk)
 	// Output: buy milk +shopping @home
 }
-
-// ----------------------------------------------------------------------------
-//  Task.RemoveContext()
-// ----------------------------------------------------------------------------
 
 func ExampleTask_RemoveContext() {
 	tsk, err := task.New("buy milk @home @work +shopping")
@@ -649,14 +586,7 @@ func ExampleTask_RemoveContext() {
 	// Output: buy milk @work +shopping
 }
 
-// ----------------------------------------------------------------------------
-//  Task.InsertAfter()
-// ----------------------------------------------------------------------------
-
-// ExampleTask_InsertAfter demonstrates inserting a segment after a target.
-//
-// This method does not check for duplicates or validity, so be careful when
-// using it.
+// InsertAfter does not check for duplicates or validity.
 func ExampleTask_InsertAfter() {
 	tsk, err := task.New("x buy milk")
 	if err != nil {
@@ -678,15 +608,8 @@ func ExampleTask_InsertAfter() {
 }
 
 // ============================================================================
-//  Examples for Functions
+//  Option Examples
 // ============================================================================
-
-//  Setter Options
-// ============================================================================
-
-// ----------------------------------------------------------------------------
-//  WithContext()
-// ----------------------------------------------------------------------------
 
 func ExampleWithContext_while_creation() {
 	tsk, err := task.New("buy milk",
@@ -724,12 +647,6 @@ func ExampleWithContext_after_creation() {
 	// Contexts: [home]
 }
 
-// ----------------------------------------------------------------------------
-//  WithoutContext()
-// ----------------------------------------------------------------------------
-
-// This example demonstrates removing a context using the WithoutContext option
-// during task creation.
 func ExampleWithoutContext_while_creation() {
 	tsk, err := task.New("buy milk @home @store",
 		task.WithoutContext("home"),
@@ -745,8 +662,6 @@ func ExampleWithoutContext_while_creation() {
 	// Contexts: [store]
 }
 
-// This example demonstrates removing a context using the WithoutContext option
-// after task creation.
 func ExampleWithoutContext_after_creation() {
 	tsk, err := task.New("buy milk @home @store")
 	if err != nil {
@@ -767,10 +682,6 @@ func ExampleWithoutContext_after_creation() {
 	// Current task: buy milk @store
 	// Contexts: [store]
 }
-
-// ----------------------------------------------------------------------------
-//  WithProject()
-// ----------------------------------------------------------------------------
 
 func ExampleWithProject_while_creation() {
 	tsk, err := task.New("buy milk",
@@ -808,10 +719,6 @@ func ExampleWithProject_after_creation() {
 	// Projects: [shopping]
 }
 
-// ----------------------------------------------------------------------------
-//  WithoutProject()
-// ----------------------------------------------------------------------------
-
 func ExampleWithoutProject_while_creation() {
 	tsk, err := task.New("buy milk +shopping +errands",
 		task.WithoutProject("shopping"),
@@ -847,10 +754,6 @@ func ExampleWithoutProject_after_creation() {
 	// Current task: buy milk +errands
 	// Projects: [errands]
 }
-
-// ----------------------------------------------------------------------------
-//  WithCompleted()
-// ----------------------------------------------------------------------------
 
 func ExampleWithCompleted_default() {
 	tsk, err := task.New("buy milk")
@@ -907,4 +810,89 @@ func ExampleWithCompleted_withoutDate() {
 	// Output:
 	// Is Done: true
 	// Completed Date:
+}
+
+func ExampleWithKeyValue_while_creation() {
+	tsk, err := task.New("buy milk",
+		task.WithKeyValue("due", "2024-12-25"),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Key-Values:", tsk.KeyValues())
+	// Output:
+	// Current task: buy milk due:2024-12-25
+	// Key-Values: map[due:2024-12-25]
+}
+
+func ExampleWithKeyValue_after_creation() {
+	tsk, err := task.New("buy milk")
+	if err != nil {
+		panic(err)
+	}
+
+	err = tsk.Apply(task.WithKeyValue("due", "2024-12-25"))
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Key-Values:", tsk.KeyValues())
+	// Output:
+	// Current task: buy milk due:2024-12-25
+	// Key-Values: map[due:2024-12-25]
+}
+
+func ExampleWithKeyValue_updateExisting() {
+	tsk, err := task.New("buy milk due:2024-01-01")
+	if err != nil {
+		panic(err)
+	}
+
+	// Update existing key-value
+	err = tsk.Apply(task.WithKeyValue("due", "2024-12-25"))
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Key-Values:", tsk.KeyValues())
+	// Output:
+	// Current task: buy milk due:2024-12-25
+	// Key-Values: map[due:2024-12-25]
+}
+
+func ExampleWithoutKeyValue_while_creation() {
+	tsk, err := task.New("buy milk due:2024-12-25 priority:high",
+		task.WithoutKeyValue("due"),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Key-Values:", tsk.KeyValues())
+	// Output:
+	// Current task: buy milk priority:high
+	// Key-Values: map[priority:high]
+}
+
+func ExampleWithoutKeyValue_after_creation() {
+	tsk, err := task.New("buy milk due:2024-12-25 priority:high")
+	if err != nil {
+		panic(err)
+	}
+
+	err = tsk.Apply(task.WithoutKeyValue("priority"))
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Key-Values:", tsk.KeyValues())
+	// Output:
+	// Current task: buy milk due:2024-12-25
+	// Key-Values: map[due:2024-12-25]
 }
