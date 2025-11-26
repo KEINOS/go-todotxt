@@ -292,8 +292,6 @@ var dataValidVarious = []struct {
 		},
 	},
 	// i18n test cases
-	//
-	//nolint:gosmopolitan // intentional test case with mixed languages
 	{
 		title: "Task with Japanese description",
 		input: "(A) 日本語のタスク +プロジェクト @office",
@@ -330,7 +328,6 @@ var dataValidVarious = []struct {
 			Comment:          "",
 		},
 	},
-	//nolint:gosmopolitan // intentional test case with mixed languages
 	{
 		title: "Task with Chinese description",
 		input: "(C) 中文任务 +项目 @团队",
@@ -349,7 +346,6 @@ var dataValidVarious = []struct {
 			Comment:          "",
 		},
 	},
-	//nolint:gosmopolitan // intentional test case with mixed languages
 	{
 		title: "Task with mixed language description and inline comment",
 		input: "x 2016-05-20 2016-04-30 これは @日本語 @한국어 @中文 +プロジェクト +프로젝트 +项目 #超重要",

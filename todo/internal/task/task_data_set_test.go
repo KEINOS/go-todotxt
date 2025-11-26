@@ -51,8 +51,6 @@ var dataNewErrorScenarios = []struct {
 // ----------------------------------------------------------------------------
 
 // Comprehensive test data for priority setter methods.
-//
-//nolint:gosmopolitan // disable dur to international test cases
 var dataPriority = []struct {
 	title          string
 	task           string
@@ -405,7 +403,6 @@ var dataAppendSegment = []struct {
 //  InsertAfter()
 // ----------------------------------------------------------------------------
 
-//nolint:gosmopolitan // disable dur to international test cases
 var dataInsertAfter = []struct {
 	title     string
 	taskStr   string

@@ -47,3 +47,5 @@ linters:
     - testpackage
     # Disabled due to global variables for package-level settings
     - gochecknoglobals
+    # Disabled due to support i18n in the tasks
+    - gosmopolitan

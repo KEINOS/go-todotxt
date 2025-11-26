@@ -112,6 +112,12 @@ func TestSegment_IsTagProject(t *testing.T) {
 		{"+project", true},
 		{"+Project", true},
 		{"+123", true},
+		// i18n: Unicode characters are valid in project tags
+		{"+日本語プロジェクト", true},
+		{"+项目", true},     // Chinese
+		{"+проект", true}, // Russian
+		{"+émoji🚀", true}, // Mixed with emoji
+		{"+café", true},   // Accented characters
 
 		{"+", false},
 		{"project", false},
@@ -140,6 +146,12 @@ func TestSegment_IsTagContext(t *testing.T) {
 		{"@context", true},
 		{"@Context", true},
 		{"@123", true},
+		// i18n: Unicode characters are valid in context tags
+		{"@自宅", true},      // Japanese "home"
+		{"@办公室", true},     // Chinese "office"
+		{"@дом", true},     // Russian "home"
+		{"@café", true},    // Accented characters
+		{"@работа🏢", true}, // Mixed with emoji
 
 		{"@", false},
 		{"context", false},
@@ -174,6 +186,17 @@ func TestSegment_IsKeyValue(t *testing.T) {
 		{"endpoint:http://api.example.com:3000/v1/users", true},
 		{"time:10:00-11:30", true},
 		{"key:value:extra", true},
+		// Edge case: space in value (valid - space is part of the value)
+		// Note: In practice, segments are split by whitespace, so this
+		// would not occur. But if it did, it's technically valid.
+		{"key: value", true},
+		{"note: remember to call", true},
+		// i18n: Unicode in keys and values
+		{"場所:東京", true},        // Japanese key:value
+		{"地点:北京", true},        // Chinese key:value
+		{"место:дом", true},    // Russian key:value
+		{"emoji:🎉party", true}, // Emoji in value
+		{"café:latte", true},   // Accented key
 		// Invalid formats
 		{"key:", false},     // trailing colon
 		{":value", false},   // leading colon
