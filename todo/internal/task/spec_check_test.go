@@ -3,6 +3,7 @@ package task_test
 import (
 	"testing"
 
+	"github.com/KEINOS/go-todotxt/todo/internal/parse"
 	"github.com/KEINOS/go-todotxt/todo/internal/task"
 	"github.com/stretchr/testify/require"
 )
@@ -209,8 +210,8 @@ func Test_Additional_KeyValue(t *testing.T) {
 	tsk, err := task.New(taskStr)
 	require.NoError(t, err)
 
-	expect := map[string]string{
-		"due": "2016-05-30",
+	expect := []parse.KeyValue{
+		{Key: "due", Value: "2016-05-30"},
 	}
 	actual := tsk.KeyValues()
 	require.Equal(t, expect, actual)

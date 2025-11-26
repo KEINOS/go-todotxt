@@ -45,7 +45,7 @@ func ExampleFromTaskString() {
 	// Contexts: [phone]
 	// Projects: [dinner]
 	// Description: Thank Mom for the meatballs +dinner @phone due:2016-05-25
-	// Key-Values: map[due:2016-05-25]
+	// Key-Values: [{due 2016-05-25}]
 	// Comment: # this is an inline-comment
 	// Is comment line: false
 	// Has inline comment: true
@@ -87,8 +87,8 @@ func ExampleFromTaskString_with_key_value_tags() {
 	fmt.Println("Description:", parsed.Description())
 	fmt.Println("Comment:", parsed.Comment())
 
-	for k, v := range parsed.KeyValues() {
-		fmt.Printf("Key-Value: %s = %s\n", k, v)
+	for _, kv := range parsed.KeyValues() {
+		fmt.Printf("Key-Value: %s = %s\n", kv.Key, kv.Value)
 	}
 	// Unordered output:
 	// Description: code review site url:https://example.com/#fragment due:2024-07-01
@@ -210,7 +210,7 @@ func ExampleParsed_Components() {
 	fmt.Printf("Description: %s\n", comp.Description)
 	fmt.Printf("Contexts: %v\n", comp.Contexts)
 	fmt.Printf("Projects: %v\n", comp.Projects)
-	fmt.Printf("Tags: %s\n", comp.KeyValues)
+	fmt.Printf("Tags: %v\n", comp.KeyValues)
 	fmt.Printf("Comment: %s\n", comp.Comment)
 
 	// Unordered output:
@@ -221,7 +221,7 @@ func ExampleParsed_Components() {
 	// Description: measure space for +chapelShelving @chapel due:2016-05-30
 	// Contexts: [chapel]
 	// Projects: [chapelShelving]
-	// Tags: map[due:2016-05-30]
+	// Tags: [{due 2016-05-30}]
 	// Comment: # comment
 }
 
@@ -285,7 +285,7 @@ func ExampleComponents_json() {
 		Comment:          "# comment",
 		Contexts:         []string{"chapel"},
 		Projects:         []string{"chapelShelving"},
-		KeyValues:        map[string]string{"due": "2016-05-30"},
+		KeyValues:        []parse.KeyValue{{Key: "due", Value: "2016-05-30"}},
 	}
 
 	// Marshal to JSON with indentation
@@ -297,9 +297,6 @@ func ExampleComponents_json() {
 	fmt.Println(string(jsonBytes))
 	// Output:
 	// {
-	//   "keyValues": {
-	//     "due": "2016-05-30"
-	//   },
 	//   "priority": "A",
 	//   "dateCompleted": "2016-05-20",
 	//   "dateCreated": "2016-04-30",
@@ -310,6 +307,12 @@ func ExampleComponents_json() {
 	//   ],
 	//   "projects": [
 	//     "chapelShelving"
+	//   ],
+	//   "keyValues": [
+	//     {
+	//       "key": "due",
+	//       "value": "2016-05-30"
+	//     }
 	//   ],
 	//   "posInlineComment": 68,
 	//   "isDone": true,

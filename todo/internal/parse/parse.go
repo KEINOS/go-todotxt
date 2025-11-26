@@ -20,12 +20,13 @@ type Parsed struct {
 	// The original task string.
 	originalText string
 	// Caches
-	inlineComment *string           // Cached inline comment.
-	isCommentLine *bool             // Cached comment line status.
-	isDone        *bool             // Cached done status.
-	indexSkip     *int              // Cached index to skip header parts.
-	indexComment  *int              // Cached index of the inline comment.
-	keyValueCache map[string]string // Cached key-value pairs.
+	inlineComment *string     // Cached inline comment.
+	isCommentLine *bool       // Cached comment line status.
+	isDone        *bool       // Cached done status.
+	indexSkip     *int        // Cached index to skip header parts.
+	indexComment  *int        // Cached index of the inline comment.
+	keyValueCache []KeyValue  // Cached key-value pairs.
+	keyValueInit  bool        // Whether keyValueCache has been initialized.
 	// Options
 	options          []Option // Options for parsing.
 	allowedCtrlChars []rune   // Allowed control characters.
@@ -171,6 +172,7 @@ func (p *Parsed) resetCaches() {
 	p.isDone = nil
 	p.indexSkip = nil
 	p.keyValueCache = nil
+	p.keyValueInit = false
 }
 
 // setComment caches the inline comment text.

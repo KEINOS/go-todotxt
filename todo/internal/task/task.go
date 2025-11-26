@@ -541,7 +541,7 @@ func (t *Task) RemoveProject(project string) error {
 //
 // Note: If the same key appears multiple times in the original text,
 // SetTag updates only the first occurrence. The [Task.KeyValues] method
-// returns only the last value for duplicate keys (since it uses a map).
+// returns all values including duplicates, preserving their original order.
 // To avoid ambiguity, use a single key with comma-separated values
 // (e.g., "tag:value1,value2") for multiple values.
 func (t *Task) SetTag(key, value string) error {
@@ -577,11 +577,11 @@ func (t *Task) SetTag(key, value string) error {
 
 	newTag := key + spec.SepKeyValue.String() + value
 
-	// Check if the key already exists and update it
+	// Check if the key already exists and update it (first occurrence)
 	existingValues := t.KeyValues()
-	if existingValues != nil {
-		if oldValue, exists := existingValues[key]; exists {
-			oldTag := key + spec.SepKeyValue.String() + oldValue
+	for _, kv := range existingValues {
+		if kv.Key == key {
+			oldTag := key + spec.SepKeyValue.String() + kv.Value
 			currentText := t.String()
 			newText := replaceFirst(currentText, oldTag, newTag)
 			t.SetText(newText)
@@ -618,21 +618,18 @@ func (t *Task) RemoveTag(key string) error {
 		return newError("invalid key-value: key cannot contain whitespace")
 	}
 
-	// Check if the key exists
+	// Check if the key exists (first occurrence)
 	existingValues := t.KeyValues()
-	if existingValues == nil {
-		return nil // No key-values exist
+	for _, kv := range existingValues {
+		if kv.Key == key {
+			// Remove the key-value tag
+			oldTag := key + spec.SepKeyValue.String() + kv.Value
+
+			return t.RemoveSegment(oldTag)
+		}
 	}
 
-	oldValue, exists := existingValues[key]
-	if !exists {
-		return nil // Key not found
-	}
-
-	// Remove the key-value tag
-	oldTag := key + spec.SepKeyValue.String() + oldValue
-
-	return t.RemoveSegment(oldTag)
+	return nil // Key not found
 }
 
 // ----------------------------------------------------------------------------

@@ -50,7 +50,7 @@ func Example() {
 	// Description: this is a completed task with +project and @context due:2016-05-25
 	// Projects: [project]
 	// Contexts: [context]
-	// Key-Values: map[due:2016-05-25]
+	// Key-Values: [{due 2016-05-25}]
 	// Is Completed: true
 	// Has Inline Comment: true
 	// Is Comment Line: false
@@ -78,9 +78,6 @@ func Example_output_as_JSON() {
 	fmt.Println(string(jsonBytes))
 	// Output:
 	// {
-	//   "keyValues": {
-	//     "due": "2025-05-25"
-	//   },
 	//   "priority": "A",
 	//   "dateCompleted": "2025-05-20",
 	//   "dateCreated": "2025-05-18",
@@ -91,6 +88,12 @@ func Example_output_as_JSON() {
 	//   ],
 	//   "projects": [
 	//     "project"
+	//   ],
+	//   "keyValues": [
+	//     {
+	//       "key": "due",
+	//       "value": "2025-05-25"
+	//     }
 	//   ],
 	//   "posInlineComment": 95,
 	//   "isDone": true,
@@ -233,7 +236,7 @@ func ExampleNew_allow_tabs_in_task_text_to_create_with_parse_option() {
 	// Description: this is a completed task with +project and @context due:2016-05-25
 	// Projects: [project]
 	// Contexts: [context]
-	// Key-Values: map[due:2016-05-25]
+	// Key-Values: [{due 2016-05-25}]
 	// Comment: # withan inline-comment
 }
 
@@ -824,7 +827,7 @@ func ExampleWithKeyValue_while_creation() {
 	fmt.Println("Key-Values:", tsk.KeyValues())
 	// Output:
 	// Current task: buy milk due:2024-12-25
-	// Key-Values: map[due:2024-12-25]
+	// Key-Values: [{due 2024-12-25}]
 }
 
 func ExampleWithKeyValue_after_creation() {
@@ -842,7 +845,7 @@ func ExampleWithKeyValue_after_creation() {
 	fmt.Println("Key-Values:", tsk.KeyValues())
 	// Output:
 	// Current task: buy milk due:2024-12-25
-	// Key-Values: map[due:2024-12-25]
+	// Key-Values: [{due 2024-12-25}]
 }
 
 func ExampleWithKeyValue_updateExisting() {
@@ -861,7 +864,7 @@ func ExampleWithKeyValue_updateExisting() {
 	fmt.Println("Key-Values:", tsk.KeyValues())
 	// Output:
 	// Current task: buy milk due:2024-12-25
-	// Key-Values: map[due:2024-12-25]
+	// Key-Values: [{due 2024-12-25}]
 }
 
 func ExampleWithoutKeyValue_while_creation() {
@@ -876,7 +879,7 @@ func ExampleWithoutKeyValue_while_creation() {
 	fmt.Println("Key-Values:", tsk.KeyValues())
 	// Output:
 	// Current task: buy milk priority:high
-	// Key-Values: map[priority:high]
+	// Key-Values: [{priority high}]
 }
 
 func ExampleWithoutKeyValue_after_creation() {
@@ -894,7 +897,7 @@ func ExampleWithoutKeyValue_after_creation() {
 	fmt.Println("Key-Values:", tsk.KeyValues())
 	// Output:
 	// Current task: buy milk due:2024-12-25
-	// Key-Values: map[due:2024-12-25]
+	// Key-Values: [{due 2024-12-25}]
 }
 
 func ExampleWithDueDate_while_creation() {
@@ -909,7 +912,7 @@ func ExampleWithDueDate_while_creation() {
 	fmt.Println("Key-Values:", tsk.KeyValues())
 	// Output:
 	// Current task: buy milk due:2024-12-25
-	// Key-Values: map[due:2024-12-25]
+	// Key-Values: [{due 2024-12-25}]
 }
 
 func ExampleWithDueDate_after_creation() {
@@ -927,7 +930,7 @@ func ExampleWithDueDate_after_creation() {
 	fmt.Println("Key-Values:", tsk.KeyValues())
 	// Output:
 	// Current task: buy milk due:2024-12-25
-	// Key-Values: map[due:2024-12-25]
+	// Key-Values: [{due 2024-12-25}]
 }
 
 func ExampleWithDueDate_updateExisting() {
@@ -945,7 +948,7 @@ func ExampleWithDueDate_updateExisting() {
 	fmt.Println("Key-Values:", tsk.KeyValues())
 	// Output:
 	// Current task: buy milk due:2024-12-25
-	// Key-Values: map[due:2024-12-25]
+	// Key-Values: [{due 2024-12-25}]
 }
 
 func ExampleWithoutDueDate_while_creation() {
@@ -960,7 +963,7 @@ func ExampleWithoutDueDate_while_creation() {
 	fmt.Println("Key-Values:", tsk.KeyValues())
 	// Output:
 	// Current task: buy milk priority:high
-	// Key-Values: map[priority:high]
+	// Key-Values: [{priority high}]
 }
 
 func ExampleWithoutDueDate_after_creation() {
@@ -978,5 +981,5 @@ func ExampleWithoutDueDate_after_creation() {
 	fmt.Println("Key-Values:", tsk.KeyValues())
 	// Output:
 	// Current task: buy milk priority:high
-	// Key-Values: map[priority:high]
+	// Key-Values: [{priority high}]
 }

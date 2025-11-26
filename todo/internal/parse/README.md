@@ -22,7 +22,8 @@ FromTaskString(todoTxt string, opts ...Option) (*Parsed, error)
 - `String()` gives back the original task text.
 - `IsDone()`, `IsCommentLine()`, `HasInlineComment()` expose status flags.
 - `Priority()`, `DateCompleted()`, `DateCreated()` return header values.
-- `Contexts()`, `Projects()`, `KeyValues()` return slices or maps for tags.
+- `Contexts()`, `Projects()` return slices of tags.
+- `KeyValues()` returns a slice of key-value pairs, preserving order and duplicates.
 - `Description()` strips markers and inline comments while keeping tag order.
 - `Comment()` returns the comment text (line or inline).
 - `Components()` bundles the above into a single struct.

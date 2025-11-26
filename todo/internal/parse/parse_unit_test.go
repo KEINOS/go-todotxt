@@ -858,7 +858,7 @@ func TestParsed_offsetAfterSegments(t *testing.T) {
 		t.Parallel()
 
 		// Create a Parsed object with mismatched originalText and Segments
-		parsed := &Parsed{
+		parsed := Parsed{
 			originalText:     "x 2024-01-01 task",
 			Segments:         []segment.Segment{"x", "2024-01-01", "NONEXISTENT", "task"},
 			inlineComment:    nil,
@@ -867,6 +867,7 @@ func TestParsed_offsetAfterSegments(t *testing.T) {
 			indexSkip:        nil,
 			indexComment:     nil,
 			keyValueCache:    nil,
+			keyValueInit:     false,
 			options:          nil,
 			allowedCtrlChars: nil,
 		}

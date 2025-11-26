@@ -184,19 +184,20 @@ func (p *Parsed) Description() string {
 	return result
 }
 
-// KeyValues returns a map of key-value pairs found in the task.
+// KeyValues returns a slice of key-value pairs found in the task.
 //
 // Splits segments at the first ':' to form key-value pairs. The value part may
 // contain additional colons (e.g., "url:https://example.com").
 // Returns nil if no key-value pairs are found.
 //
-// Note: Results are cached after the first call.
-func (p *Parsed) KeyValues() map[string]string {
+// Note: Results are cached after the first call. The slice preserves the order
+// of appearance in the original task string and may contain duplicate keys.
+func (p *Parsed) KeyValues() []KeyValue {
 	if p.IsCommentLine() {
 		return nil
 	}
 
-	if p.keyValueCache != nil {
+	if p.keyValueInit {
 		return p.keyValueCache // decrease mem alloc 11 --> 2, 280 --> 103 ns/op
 	}
 
@@ -205,8 +206,6 @@ func (p *Parsed) KeyValues() map[string]string {
 	separator := spec.SepKeyValue.String()
 
 	index := p.consumeHeadParts() // Skip done mark and priority
-
-	p.keyValueCache = make(map[string]string, len(p.Segments)-index)
 
 	for _, seg := range p.Segments[index:] {
 		if !seg.IsKeyValue() {
@@ -217,13 +216,14 @@ func (p *Parsed) KeyValues() map[string]string {
 
 		// ignore 'key: ' or ':value ' cases
 		if len(parts) == maxNumParts {
-			p.keyValueCache[parts[0]] = parts[1]
+			p.keyValueCache = append(p.keyValueCache, KeyValue{
+				Key:   parts[0],
+				Value: parts[1],
+			})
 		}
 	}
 
-	if len(p.keyValueCache) == 0 {
-		p.keyValueCache = nil
-	}
+	p.keyValueInit = true
 
 	return p.keyValueCache
 }

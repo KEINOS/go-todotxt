@@ -99,12 +99,13 @@ re-parsing until they actually finalize changes.
 When the same key-value key (e.g., `due:`) appears multiple times in a task:
 
 - `SetTag(key, value)` updates only the **first** occurrence.
-- `KeyValues()` returns only the **last** value (since it uses a `map[string]string`).
+- `KeyValues()` returns **all** key-value pairs in their original order, including
+  duplicates.
 - `RemoveTag(key)` removes only the **first** occurrence.
 
-This behavior comes from the upstream todo.txt spec which implicitly treats keys
-as unique. To store multiple values for a single key, use a comma-separated
-format like `tag:value1,value2` or `tag1:value1 tag2:value2`.
+The upstream todo.txt spec implicitly treats keys as unique. To store multiple
+values for a single key, consider using a comma-separated format like
+`tag:value1,value2`.
 
 **Example:**
 
@@ -112,7 +113,7 @@ format like `tag:value1,value2` or `tag1:value1 tag2:value2`.
 Original: "Buy milk due:2024-01-01 due:2024-02-01"
 After SetTag("due", "2024-03-01"):
          "Buy milk due:2024-03-01 due:2024-02-01"
-KeyValues()["due"] returns: "2024-02-01"  // last occurrence
+KeyValues() returns: [{Key:"due", Value:"2024-03-01"}, {Key:"due", Value:"2024-02-01"}]
 ```
 
 To avoid confusion, ensure your task files do not contain duplicate keys, or

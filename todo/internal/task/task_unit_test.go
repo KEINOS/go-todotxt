@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/KEINOS/go-todotxt/todo/internal/parse"
 	"github.com/KEINOS/go-todotxt/todo/internal/spec"
 	"github.com/stretchr/testify/require"
 )
@@ -1124,7 +1125,7 @@ func TestWithDueDate_multiple_calls(t *testing.T) {
 		require.NoError(t, err)
 
 		require.Equal(t, "buy milk due:2024-12-25", tsk.String())
-		require.Equal(t, map[string]string{"due": "2024-12-25"}, tsk.KeyValues())
+		require.Equal(t, []parse.KeyValue{{Key: "due", Value: "2024-12-25"}}, tsk.KeyValues())
 	})
 
 	t.Run("multiple WithDueDate across separate Apply calls", func(t *testing.T) {
@@ -1145,7 +1146,7 @@ func TestWithDueDate_multiple_calls(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "buy milk due:2024-12-25", tsk.String())
 
-		require.Equal(t, map[string]string{"due": "2024-12-25"}, tsk.KeyValues())
+		require.Equal(t, []parse.KeyValue{{Key: "due", Value: "2024-12-25"}}, tsk.KeyValues())
 	})
 
 	t.Run("WithDueDate during New then update via Apply", func(t *testing.T) {
@@ -1189,7 +1190,7 @@ func TestWithDueDate_multiple_calls(t *testing.T) {
 		require.NoError(t, err)
 
 		require.Equal(t, "buy milk due:2024-12-25", tsk.String())
-		require.Equal(t, map[string]string{"due": "2024-12-25"}, tsk.KeyValues())
+		require.Equal(t, []parse.KeyValue{{Key: "due", Value: "2024-12-25"}}, tsk.KeyValues())
 	})
 }
 
@@ -1533,7 +1534,9 @@ func TestTask_RemovePriority(t *testing.T) {
 		require.Empty(t, task.Priority())
 		require.Equal(t, []string{"grocery"}, task.Contexts())
 		require.Equal(t, []string{"shopping"}, task.Projects())
-		require.Equal(t, "2024-12-25", task.KeyValues()["due"])
+		require.Len(t, task.KeyValues(), 1)
+		require.Equal(t, "due", task.KeyValues()[0].Key)
+		require.Equal(t, "2024-12-25", task.KeyValues()[0].Value)
 	})
 }
 
@@ -1617,23 +1620,27 @@ func TestTask_InsertAfter(t *testing.T) {
 // TestSetTag_duplicate_keys verifies SetTag behavior when the original task
 // contains duplicate keys.
 //
-// Current behavior: SetTag updates the LAST occurrence of a key. If duplicate
-// keys exist, earlier occurrences remain unchanged. This is because KeyValues()
-// returns only the last value for each key (Go map behavior).
+// Current behavior: SetTag updates the FIRST occurrence of a key. If duplicate
+// keys exist, later occurrences remain unchanged. KeyValues() returns ALL
+// key-value pairs in their original order, including duplicates.
 func TestSetTag_duplicate_keys(t *testing.T) {
 	t.Parallel()
 
-	t.Run("KeyValues returns last value when duplicates exist", func(t *testing.T) {
+	t.Run("KeyValues returns all values including duplicates", func(t *testing.T) {
 		t.Parallel()
 
 		tsk, err := New("buy milk due:2024-11-01 due:2024-12-01")
 		require.NoError(t, err)
 
-		// KeyValues() returns the last value due to Go map behavior
-		require.Equal(t, map[string]string{"due": "2024-12-01"}, tsk.KeyValues())
+		// KeyValues() returns all key-value pairs preserving order and duplicates
+		expect := []parse.KeyValue{
+			{Key: "due", Value: "2024-11-01"},
+			{Key: "due", Value: "2024-12-01"},
+		}
+		require.Equal(t, expect, tsk.KeyValues())
 	})
 
-	t.Run("SetTag updates last occurrence only", func(t *testing.T) {
+	t.Run("SetTag updates first occurrence only", func(t *testing.T) {
 		t.Parallel()
 
 		tsk, err := New("buy milk due:2024-11-01 due:2024-12-01")
@@ -1642,12 +1649,17 @@ func TestSetTag_duplicate_keys(t *testing.T) {
 		err = tsk.Apply(WithDueDate("2025-01-01"))
 		require.NoError(t, err)
 
-		// Current behavior: only the last "due" is updated
-		require.Equal(t, "buy milk due:2024-11-01 due:2025-01-01", tsk.String())
-		require.Equal(t, map[string]string{"due": "2025-01-01"}, tsk.KeyValues())
+		// Current behavior: only the first "due" is updated
+		require.Equal(t, "buy milk due:2025-01-01 due:2024-12-01", tsk.String())
+
+		expect := []parse.KeyValue{
+			{Key: "due", Value: "2025-01-01"},
+			{Key: "due", Value: "2024-12-01"},
+		}
+		require.Equal(t, expect, tsk.KeyValues())
 	})
 
-	t.Run("RemoveTag removes last occurrence only", func(t *testing.T) {
+	t.Run("RemoveTag removes first occurrence only", func(t *testing.T) {
 		t.Parallel()
 
 		tsk, err := New("buy milk due:2024-11-01 due:2024-12-01")
@@ -1656,9 +1668,13 @@ func TestSetTag_duplicate_keys(t *testing.T) {
 		err = tsk.Apply(WithoutDueDate())
 		require.NoError(t, err)
 
-		// Current behavior: only the last "due" is removed
-		require.Equal(t, "buy milk due:2024-11-01", tsk.String())
-		require.Equal(t, map[string]string{"due": "2024-11-01"}, tsk.KeyValues())
+		// Current behavior: only the first "due" is removed
+		require.Equal(t, "buy milk due:2024-12-01", tsk.String())
+
+		expect := []parse.KeyValue{
+			{Key: "due", Value: "2024-12-01"},
+		}
+		require.Equal(t, expect, tsk.KeyValues())
 	})
 
 	t.Run("multiple different keys with duplicates", func(t *testing.T) {
@@ -1667,11 +1683,14 @@ func TestSetTag_duplicate_keys(t *testing.T) {
 		tsk, err := New("task url:http://a.com url:http://b.com tag:foo tag:bar")
 		require.NoError(t, err)
 
-		// KeyValues returns last value for each key
-		require.Equal(t, map[string]string{
-			"url": "http://b.com",
-			"tag": "bar",
-		}, tsk.KeyValues())
+		// KeyValues returns all values preserving order and duplicates
+		expect := []parse.KeyValue{
+			{Key: "url", Value: "http://a.com"},
+			{Key: "url", Value: "http://b.com"},
+			{Key: "tag", Value: "foo"},
+			{Key: "tag", Value: "bar"},
+		}
+		require.Equal(t, expect, tsk.KeyValues())
 	})
 }
 
