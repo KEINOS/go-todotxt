@@ -538,6 +538,12 @@ func (t *Task) RemoveProject(project string) error {
 
 // SetTag sets a key-value pair tag (e.g., "due:2024-12-25").
 // Updates existing key or appends new one.
+//
+// Note: If the same key appears multiple times in the original text,
+// SetTag updates only the first occurrence. The [Task.KeyValues] method
+// returns only the last value for duplicate keys (since it uses a map).
+// To avoid ambiguity, use a single key with comma-separated values
+// (e.g., "tag:value1,value2") for multiple values.
 func (t *Task) SetTag(key, value string) error {
 	if t.isDirty {
 		err := t.ensureParsed()

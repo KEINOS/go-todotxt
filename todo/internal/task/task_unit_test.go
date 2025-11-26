@@ -1101,6 +1101,98 @@ func TestWithIncomplete(t *testing.T) {
 	})
 }
 
+// ----------------------------------------------------------------------------
+//  WithDueDate()
+// ----------------------------------------------------------------------------
+
+// TestWithDueDate_multiple_calls verifies that multiple WithDueDate calls
+// result in the last call taking precedence.
+func TestWithDueDate_multiple_calls(t *testing.T) {
+	t.Parallel()
+
+	t.Run("multiple WithDueDate in single Apply - last wins", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk")
+		require.NoError(t, err)
+
+		err = tsk.Apply(
+			WithDueDate("2024-01-01"),
+			WithDueDate("2024-06-15"),
+			WithDueDate("2024-12-25"), // last one should win
+		)
+		require.NoError(t, err)
+
+		require.Equal(t, "buy milk due:2024-12-25", tsk.String())
+		require.Equal(t, map[string]string{"due": "2024-12-25"}, tsk.KeyValues())
+	})
+
+	t.Run("multiple WithDueDate across separate Apply calls", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk")
+		require.NoError(t, err)
+
+		err = tsk.Apply(WithDueDate("2024-01-01"))
+		require.NoError(t, err)
+		require.Equal(t, "buy milk due:2024-01-01", tsk.String())
+
+		err = tsk.Apply(WithDueDate("2024-06-15"))
+		require.NoError(t, err)
+		require.Equal(t, "buy milk due:2024-06-15", tsk.String())
+
+		err = tsk.Apply(WithDueDate("2024-12-25"))
+		require.NoError(t, err)
+		require.Equal(t, "buy milk due:2024-12-25", tsk.String())
+
+		require.Equal(t, map[string]string{"due": "2024-12-25"}, tsk.KeyValues())
+	})
+
+	t.Run("WithDueDate during New then update via Apply", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk", WithDueDate("2024-01-01"))
+		require.NoError(t, err)
+		require.Equal(t, "buy milk due:2024-01-01", tsk.String())
+
+		err = tsk.Apply(WithDueDate("2024-12-25"))
+		require.NoError(t, err)
+		require.Equal(t, "buy milk due:2024-12-25", tsk.String())
+	})
+
+	t.Run("WithDueDate then WithoutDueDate removes due date", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk")
+		require.NoError(t, err)
+
+		err = tsk.Apply(
+			WithDueDate("2024-12-25"),
+			WithoutDueDate(), // should remove it
+		)
+		require.NoError(t, err)
+
+		require.Equal(t, "buy milk", tsk.String())
+		require.Nil(t, tsk.KeyValues())
+	})
+
+	t.Run("WithoutDueDate then WithDueDate adds due date", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk due:2024-01-01")
+		require.NoError(t, err)
+
+		err = tsk.Apply(
+			WithoutDueDate(),          // remove existing
+			WithDueDate("2024-12-25"), // add new
+		)
+		require.NoError(t, err)
+
+		require.Equal(t, "buy milk due:2024-12-25", tsk.String())
+		require.Equal(t, map[string]string{"due": "2024-12-25"}, tsk.KeyValues())
+	})
+}
+
 // ============================================================================
 //  Tests for private functions
 // ============================================================================
@@ -1518,6 +1610,71 @@ func TestTask_InsertAfter(t *testing.T) {
 	}
 }
 
+// ----------------------------------------------------------------------------
+//  Task.SetTag()
+// ----------------------------------------------------------------------------
+
+// TestSetTag_duplicate_keys verifies SetTag behavior when the original task
+// contains duplicate keys.
+//
+// Current behavior: SetTag updates the LAST occurrence of a key. If duplicate
+// keys exist, earlier occurrences remain unchanged. This is because KeyValues()
+// returns only the last value for each key (Go map behavior).
+func TestSetTag_duplicate_keys(t *testing.T) {
+	t.Parallel()
+
+	t.Run("KeyValues returns last value when duplicates exist", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk due:2024-11-01 due:2024-12-01")
+		require.NoError(t, err)
+
+		// KeyValues() returns the last value due to Go map behavior
+		require.Equal(t, map[string]string{"due": "2024-12-01"}, tsk.KeyValues())
+	})
+
+	t.Run("SetTag updates last occurrence only", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk due:2024-11-01 due:2024-12-01")
+		require.NoError(t, err)
+
+		err = tsk.Apply(WithDueDate("2025-01-01"))
+		require.NoError(t, err)
+
+		// Current behavior: only the last "due" is updated
+		require.Equal(t, "buy milk due:2024-11-01 due:2025-01-01", tsk.String())
+		require.Equal(t, map[string]string{"due": "2025-01-01"}, tsk.KeyValues())
+	})
+
+	t.Run("RemoveTag removes last occurrence only", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk due:2024-11-01 due:2024-12-01")
+		require.NoError(t, err)
+
+		err = tsk.Apply(WithoutDueDate())
+		require.NoError(t, err)
+
+		// Current behavior: only the last "due" is removed
+		require.Equal(t, "buy milk due:2024-11-01", tsk.String())
+		require.Equal(t, map[string]string{"due": "2024-11-01"}, tsk.KeyValues())
+	})
+
+	t.Run("multiple different keys with duplicates", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("task url:http://a.com url:http://b.com tag:foo tag:bar")
+		require.NoError(t, err)
+
+		// KeyValues returns last value for each key
+		require.Equal(t, map[string]string{
+			"url": "http://b.com",
+			"tag": "bar",
+		}, tsk.KeyValues())
+	})
+}
+
 // ============================================================================
 //  Private Methods
 // ============================================================================
@@ -1602,25 +1759,6 @@ func TestTask_DirtyFlag(t *testing.T) {
 		require.Equal(t, "C", task.Priority())
 		require.False(t, task.isDirty)
 	})
-}
-
-// ============================================================================
-//  Tests for issue fixes (Reproduction and fix verification)
-// ============================================================================
-
-func Test_Issue21_todo_task_formatting(t *testing.T) {
-	t.Parallel()
-
-	const taskTxt = "2025-01-02 testing @inline +project definition for a task @testing time:0s"
-
-	tsk, err := New(taskTxt)
-	require.NoError(t, err)
-
-	expect := taskTxt
-	actual := tsk.String()
-
-	require.Equal(t, expect, actual,
-		"Task string after parsing should match original input")
 }
 
 // ----------------------------------------------------------------------------
@@ -1830,6 +1968,25 @@ func TestTask_Reopen(t *testing.T) {
 		require.Equal(t, "buy milk", tsk.String())
 		require.False(t, tsk.IsCompleted())
 	})
+}
+
+// ============================================================================
+//  Tests for issue fixes (Reproduction and fix verification)
+// ============================================================================
+
+func Test_Issue21_todo_task_formatting(t *testing.T) {
+	t.Parallel()
+
+	const taskTxt = "2025-01-02 testing @inline +project definition for a task @testing time:0s"
+
+	tsk, err := New(taskTxt)
+	require.NoError(t, err)
+
+	expect := taskTxt
+	actual := tsk.String()
+
+	require.Equal(t, expect, actual,
+		"Task string after parsing should match original input")
 }
 
 // ============================================================================

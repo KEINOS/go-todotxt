@@ -896,3 +896,87 @@ func ExampleWithoutKeyValue_after_creation() {
 	// Current task: buy milk due:2024-12-25
 	// Key-Values: map[due:2024-12-25]
 }
+
+func ExampleWithDueDate_while_creation() {
+	tsk, err := task.New("buy milk",
+		task.WithDueDate("2024-12-25"),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Key-Values:", tsk.KeyValues())
+	// Output:
+	// Current task: buy milk due:2024-12-25
+	// Key-Values: map[due:2024-12-25]
+}
+
+func ExampleWithDueDate_after_creation() {
+	tsk, err := task.New("buy milk")
+	if err != nil {
+		panic(err)
+	}
+
+	err = tsk.Apply(task.WithDueDate("2024-12-25"))
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Key-Values:", tsk.KeyValues())
+	// Output:
+	// Current task: buy milk due:2024-12-25
+	// Key-Values: map[due:2024-12-25]
+}
+
+func ExampleWithDueDate_updateExisting() {
+	tsk, err := task.New("buy milk due:2024-01-01")
+	if err != nil {
+		panic(err)
+	}
+
+	err = tsk.Apply(task.WithDueDate("2024-12-25"))
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Key-Values:", tsk.KeyValues())
+	// Output:
+	// Current task: buy milk due:2024-12-25
+	// Key-Values: map[due:2024-12-25]
+}
+
+func ExampleWithoutDueDate_while_creation() {
+	tsk, err := task.New("buy milk due:2024-12-25 priority:high",
+		task.WithoutDueDate(),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Key-Values:", tsk.KeyValues())
+	// Output:
+	// Current task: buy milk priority:high
+	// Key-Values: map[priority:high]
+}
+
+func ExampleWithoutDueDate_after_creation() {
+	tsk, err := task.New("buy milk due:2024-12-25 priority:high")
+	if err != nil {
+		panic(err)
+	}
+
+	err = tsk.Apply(task.WithoutDueDate())
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Key-Values:", tsk.KeyValues())
+	// Output:
+	// Current task: buy milk priority:high
+	// Key-Values: map[priority:high]
+}

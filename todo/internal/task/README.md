@@ -45,7 +45,8 @@ returns the wrapped error.
     replaces it in the correct position.
 - `RemovePriority()` removes any existing priority mark.
 - `SetTag(key, value string)` sets or updates a key-value pair tag
-    (e.g., `due:2024-12-25`).
+    (e.g., `due:2024-12-25`). See [Duplicate Keys](#duplicate-keys) for edge-case
+    behavior.
 - `RemoveTag(key string)` removes a key-value pair tag by key name.
 - `Complete()` / `CompleteWithDate(date string)` marks the task as done.
 - `Reopen()` marks the task as incomplete.
@@ -92,3 +93,27 @@ Task.String() ─────────────► Raw text (originalText)
 
 This split keeps reading logic deterministic while letting mutators defer
 re-parsing until they actually finalize changes.
+
+## Duplicate Keys
+
+When the same key-value key (e.g., `due:`) appears multiple times in a task:
+
+- `SetTag(key, value)` updates only the **first** occurrence.
+- `KeyValues()` returns only the **last** value (since it uses a `map[string]string`).
+- `RemoveTag(key)` removes only the **first** occurrence.
+
+This behavior comes from the upstream todo.txt spec which implicitly treats keys
+as unique. To store multiple values for a single key, use a comma-separated
+format like `tag:value1,value2` or `tag1:value1 tag2:value2`.
+
+**Example:**
+
+```text
+Original: "Buy milk due:2024-01-01 due:2024-02-01"
+After SetTag("due", "2024-03-01"):
+         "Buy milk due:2024-03-01 due:2024-02-01"
+KeyValues()["due"] returns: "2024-02-01"  // last occurrence
+```
+
+To avoid confusion, ensure your task files do not contain duplicate keys, or
+parse and normalize them before editing.

@@ -156,23 +156,30 @@ func WithoutKeyValue(key string) Option {
 	}
 }
 
-// // WithDueDate sets the due date.
-// func WithDueDate(date string) Option {
-// 	return func(_ *Task) error {
-// 		// to be implemented
-// 		return nil
-// 		// return t.SetDueDate(date)
-// 	}
-// }
+// WithDueDate sets the due date (shorthand for WithKeyValue("due", date)).
+//
+// Note: If "due:" key already exists multiple times in the original text,
+// this updates only the first occurrence. See [Task.SetTag] for details.
+func WithDueDate(date string) Option {
+	return func(t *Task) error {
+		if t.Parsed == nil { // pre-parse phase
+			return nil
+		}
 
-// // WithoutDueDate removes the due date.
-// func WithoutDueDate() Option {
-// 	return func(_ *Task) error {
-// 		// to be implemented
-// 		return nil
-// 		// return t.RemoveDueDate()
-// 	}
-// }
+		return t.SetTag("due", date)
+	}
+}
+
+// WithoutDueDate removes the due date (shorthand for WithoutKeyValue("due")).
+func WithoutDueDate() Option {
+	return func(t *Task) error {
+		if t.Parsed == nil { // pre-parse phase
+			return nil
+		}
+
+		return t.RemoveTag("due")
+	}
+}
 
 // // WithInlineComment adds or updates an inline comment.
 // func WithInlineComment(comment string) Option {
