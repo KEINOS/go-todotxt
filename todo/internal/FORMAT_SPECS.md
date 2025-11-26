@@ -1,7 +1,8 @@
 <!-- markdownlint-disable MD033 -->
 # todo.txt Format Specification
 
-Official spec: [https://github.com/todotxt/todo.txt](https://github.com/todotxt/todo.txt?tab=readme-ov-file)
+- Official spec: [https://github.com/todotxt/todo.txt](https://github.com/todotxt/todo.txt?tab=readme-ov-file)
+  - Supported version: As of commit [e79d866](https://github.com/todotxt/todo.txt/tree/e79d866af927013dc4fcfbe27ed51254a2cac394) (2025-11-26)
 
 ## Table of Contents
 
