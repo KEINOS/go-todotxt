@@ -7,10 +7,6 @@ import (
 )
 
 var (
-	// ErrTaskNotCompleted is returned when trying to retrieve a completion date of done task.
-	ErrTaskNotCompleted = newError("task is not marked as completed")
-	// ErrNoCompletionDate is returned when no completion date is found in the task.
-	ErrNoCompletionDate = newError("no completion date found")
 	// ErrTaskWithControlChars is returned when a task string contains control characters.
 	ErrTaskWithControlChars = newError("task contains control characters")
 )
