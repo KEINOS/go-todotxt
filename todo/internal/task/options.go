@@ -19,11 +19,10 @@ func WithAllowedCtrlChars(allowedCtrlChars []rune) Option {
 	return func(t *Task) error {
 		if t.Parsed == nil { // pre-parse phase
 			t.parseOpts = append(t.parseOpts, parse.WithAllowedCtrlChars(allowedCtrlChars))
-
-			return nil
+		} else {
+			t.AllowCtrlChars(allowedCtrlChars)
 		}
 
-		// Post-parse: do nothing (already applied)
 		return nil
 	}
 }
@@ -181,14 +180,16 @@ func WithoutDueDate() Option {
 	}
 }
 
-// // WithInlineComment adds or updates an inline comment.
-// func WithInlineComment(comment string) Option {
-// 	return func(_ *Task) error {
-// 		// to be implemented
-// 		return nil
-// 		// return t.AddInlineComment(comment)
-// 	}
-// }
+// WithInlineComment adds or updates an inline comment.
+func WithInlineComment(comment string) Option {
+	return func(t *Task) error {
+		if t.Parsed == nil { // pre-parse phase
+			return nil
+		}
+
+		return t.SetInlineComment(comment)
+	}
+}
 
 // // WithoutInlineComment removes the inline comment.
 // func WithoutInlineComment() Option {

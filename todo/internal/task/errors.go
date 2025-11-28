@@ -4,6 +4,8 @@ package task
 import (
 	"errors"
 	"fmt"
+
+	"github.com/KEINOS/go-todotxt/todo/internal/spec"
 )
 
 var (
@@ -15,8 +17,13 @@ var (
 	ErrNotImplemented = newError("not implemented yet")
 	// ErrTaskIsNil is returned when a nil task object is encountered.
 	ErrTaskIsNil = newError("task object is nil")
+	// ErrTaskTooLong is returned when a task's length exceeds the maximum allowed limit.
+	ErrTaskTooLong = newError("task length exceeds the maximum allowed limit: %d characters",
+		spec.MaxTaskLength)
 	// ErrValIsEmpty is returned when a value is required but is empty.
 	ErrValIsEmpty = newError("value is empty")
+	// ErrValWithCtlChars is returned when a value contains disallowed control characters.
+	ErrValWithCtlChars = newError("value contains disallowed control characters")
 	// ErrValWithSpace is returned when a value contains white spaces but shouldn't.
 	ErrValWithSpace = newError("value cannot contain white spaces")
 )

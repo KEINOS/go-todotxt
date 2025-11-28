@@ -2,6 +2,7 @@ package spec
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -263,4 +264,115 @@ func TestMark_constants(t *testing.T) {
 				"%s (0x%02X) should be a printable ASCII character", c.name, c.mark)
 		})
 	}
+}
+
+// ----------------------------------------------------------------------------
+//  ContainsCtlChars()
+// ----------------------------------------------------------------------------
+
+// Data set for control character tests.
+var dataControlChars = []struct {
+	input           string
+	allowedChars    []rune
+	containsCtlChar bool
+}{
+	// Golden/regular cases
+	{
+		input:           "",
+		allowedChars:    nil,
+		containsCtlChar: false,
+	},
+	{
+		input:           "normal text",
+		allowedChars:    nil,
+		containsCtlChar: false,
+	},
+	{
+		input:           "text with space",
+		allowedChars:    nil,
+		containsCtlChar: false,
+	},
+	// allowed cases
+	{
+		input:           "text with \ttabs\t+project\t@context\t#comment",
+		allowedChars:    []rune{'\t'},
+		containsCtlChar: false,
+	},
+	// Cases with control characters (not allowed)
+	{
+		input:           "text with \x00 null",
+		allowedChars:    nil,
+		containsCtlChar: true,
+	},
+	{
+		input:           "text with \t tab",
+		allowedChars:    nil,
+		containsCtlChar: true,
+	},
+	{
+		input:           "text with \n newline",
+		allowedChars:    nil,
+		containsCtlChar: true,
+	},
+	{
+		input:           "text with \r return",
+		allowedChars:    nil,
+		containsCtlChar: true,
+	},
+	{
+		input:           "text with \x1b escape",
+		allowedChars:    nil,
+		containsCtlChar: true,
+	},
+	{
+		input:           "text with \uFEFF BOM",
+		allowedChars:    nil,
+		containsCtlChar: true,
+	},
+	{
+		input:           "text with \u202E RTL override",
+		allowedChars:    nil,
+		containsCtlChar: true,
+	},
+	// edge/niche cases
+	// allowed control characters only
+	{
+		input:           "\t\t\t",
+		allowedChars:    []rune{'\t'},
+		containsCtlChar: false,
+	},
+	// mixture of allowed and disallowed control characters
+	{
+		input:           "text with allowed tab\t but with newline\x00",
+		allowedChars:    []rune{'\t'},
+		containsCtlChar: true,
+	},
+}
+
+func Test_ContainsCtlChars(t *testing.T) {
+	t.Parallel()
+
+	for _, test := range dataControlChars {
+		allowedChars := test.allowedChars
+		expect := test.containsCtlChar
+		actual := ContainsCtlChars(test.input, allowedChars)
+
+		require.Equal(t, expect, actual,
+			"ContainsCtlChars('%q', %v) should return %v",
+			test.input, allowedChars, expect)
+	}
+}
+
+// ----------------------------------------------------------------------------
+//  IsValidTaskLength()
+// ----------------------------------------------------------------------------
+
+func Test_IsValidTaskLength_invalid_length(t *testing.T) {
+	t.Parallel()
+
+	input := strings.Repeat("a", MaxTaskLength+1) // 64KB + 1 byte
+
+	require.False(t, IsValidTaskLength(input),
+		"it should return false for input length %d (> %d)",
+		len(input), MaxTaskLength)
 }

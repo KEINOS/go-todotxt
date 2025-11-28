@@ -19,6 +19,9 @@ import (
 // Example: "x", "(A)", "2023-12-25", "call", "mom", "+project", "@context", "due:2023-12-31".
 type Segment string
 
+// Segments represents a slice of Segment.
+type Segments []Segment
+
 // ----------------------------------------------------------------------------
 //  Methods for Segment
 // ----------------------------------------------------------------------------

@@ -160,24 +160,6 @@ func Test_findInlineCommentPos(t *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
-//  hasControlChars()
-// ----------------------------------------------------------------------------
-
-func Test_hasControlChars(t *testing.T) {
-	t.Parallel()
-
-	for _, test := range dataControlChars {
-		allowedChars := test.allowedChars
-		expect := test.containsCtlChar
-		actual := hasControlChars(test.input, allowedChars)
-
-		require.Equal(t, expect, actual,
-			"hasControlChars('%q', %v) should return %v",
-			test.input, allowedChars, expect)
-	}
-}
-
-// ----------------------------------------------------------------------------
 //  newError()
 // ----------------------------------------------------------------------------
 

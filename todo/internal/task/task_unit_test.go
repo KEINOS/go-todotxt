@@ -1194,6 +1194,76 @@ func TestWithDueDate_multiple_calls(t *testing.T) {
 	})
 }
 
+// ----------------------------------------------------------------------------
+//  WithInlineComment
+// ----------------------------------------------------------------------------
+
+func TestWithInlineComment(t *testing.T) {
+	t.Parallel()
+
+	for index, test := range dataWithInlineComment {
+		title := fmt.Sprintf("Test #%d: %s", index+1, test.title)
+
+		t.Run(title+" (during New)", func(t *testing.T) {
+			t.Parallel()
+
+			tsk, err := New(test.taskStr,
+				WithInlineComment(test.commentStr),
+			)
+
+			if test.shouldErr {
+				require.Error(t, err)
+
+				require.Nil(t, tsk)
+				require.ErrorContains(t, err, test.expectOut)
+			} else {
+				require.NoError(t, err)
+
+				require.Equal(t, test.expectOut, tsk.String())
+			}
+		})
+
+		t.Run(title+" (during Apply)", func(t *testing.T) {
+			t.Parallel()
+
+			tsk, err := New(test.taskStr)
+			require.NoError(t, err)
+
+			err = tsk.Apply(
+				WithInlineComment(test.commentStr),
+			)
+
+			if test.shouldErr {
+				require.Error(t, err)
+
+				require.ErrorContains(t, err, test.expectOut)
+				require.Equal(t, test.taskStr, tsk.String(),
+					"task string should remain unchanged on error")
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, test.expectOut, tsk.String())
+			}
+		})
+	}
+
+	t.Run("set bad task before WithInlineComment", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk")
+		require.NoError(t, err)
+
+		tsk.SetText(tsk.String() + "\t") // not allowed control char
+		tsk.isDirty = true
+
+		err = tsk.Apply(
+			WithInlineComment("check discounts"),
+		)
+		require.Error(t, err)
+
+		require.ErrorContains(t, err, "failed to re-parse dirty task before setting inline comment")
+	})
+}
+
 // ============================================================================
 //  Tests for private functions
 // ============================================================================

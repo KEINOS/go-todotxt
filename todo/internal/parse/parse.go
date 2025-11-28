@@ -7,10 +7,12 @@ For modifying tasks, use the "task" package.
 package parse
 
 import (
+	"slices"
 	"strings"
 	"unicode"
 
 	"github.com/KEINOS/go-todotxt/todo/internal/segment"
+	"github.com/KEINOS/go-todotxt/todo/internal/spec"
 )
 
 // Parsed holds the segments of a todo.txt task string.
@@ -81,7 +83,7 @@ func (p *Parsed) Parse(taskTxtUpdate string, opts ...Option) error {
 		opt(p)
 	}
 
-	if hasControlChars(p.originalText, p.allowedCtrlChars) {
+	if spec.ContainsCtlChars(p.originalText, p.allowedCtrlChars) {
 		return wrapError(ErrTaskWithControlChars, "invalid task string")
 	}
 
@@ -97,6 +99,21 @@ func (p *Parsed) Parse(taskTxtUpdate string, opts ...Option) error {
 	// Use Components() to get all fields pre-computed.
 
 	return nil
+}
+
+// AllowCtrlChars adds allowed control characters to this Parsed object.
+func (p *Parsed) AllowCtrlChars(chars []rune) {
+	if p.allowedCtrlChars == nil {
+		p.allowedCtrlChars = []rune{}
+	}
+
+	p.allowedCtrlChars = append(p.allowedCtrlChars, chars...)
+	p.allowedCtrlChars = slices.Compact(p.allowedCtrlChars) // remove dups
+}
+
+// AllowedCtrlChars returns the allowed control characters for this Parsed object.
+func (p *Parsed) AllowedCtrlChars() []rune {
+	return p.allowedCtrlChars
 }
 
 // ----------------------------------------------------------------------------

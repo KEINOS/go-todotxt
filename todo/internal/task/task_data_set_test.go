@@ -1,6 +1,7 @@
 package task
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/KEINOS/go-todotxt/todo/internal/parse"
@@ -1477,5 +1478,99 @@ var dataWithoutKeyValue = []struct {
 		expectKV:    nil,
 		errContains: "key cannot contain whitespace",
 		shouldError: true,
+	},
+}
+
+// ----------------------------------------------------------------------------
+//  WithInlineComment
+// ----------------------------------------------------------------------------
+
+var dataWithInlineComment = []struct {
+	title      string
+	taskStr    string
+	commentStr string
+	expectOut  string // expected Task.String() on success, err msg on failure
+	shouldErr  bool
+}{
+	// Golden path - basic cases
+	{
+		title:      "add comment",
+		taskStr:    "buy milk",
+		commentStr: "check discounts",
+		expectOut:  "buy milk # check discounts",
+		shouldErr:  false,
+	},
+	{
+		title:      "overwrite existing comment",
+		taskStr:    "buy milk # old comment",
+		commentStr: "new comment",
+		expectOut:  "buy milk # new comment",
+		shouldErr:  false,
+	},
+	{
+		title:      "comment line",
+		taskStr:    "# This is an old comment line",
+		commentStr: "This is a new comment line",
+		expectOut:  "# This is a new comment line",
+		shouldErr:  false,
+	},
+
+	// Error cases
+	{
+		title:      "control characters only comment",
+		taskStr:    "buy milk",
+		commentStr: "\t",
+		expectOut:  ErrValWithCtlChars.Error(),
+		shouldErr:  true,
+	},
+	{
+		title:      "multiple line comment",
+		taskStr:    "buy milk",
+		commentStr: "This is line 1\r\nThis is line 2",
+		expectOut:  ErrValWithCtlChars.Error(),
+		shouldErr:  true,
+	},
+	{
+		title:      "too long comment",
+		taskStr:    "buy milk",
+		commentStr: strings.Repeat("A", spec.MaxTaskLength),
+		expectOut:  ErrTaskTooLong.Error(),
+		shouldErr:  true,
+	},
+	// Edge cases
+	{
+		title:      "blank comment",
+		taskStr:    "buy milk",
+		commentStr: "",
+		expectOut:  "buy milk",
+		shouldErr:  false,
+	},
+	{
+		title:      "comment with only spaces",
+		taskStr:    "buy milk",
+		commentStr: "     ",
+		expectOut:  "buy milk",
+		shouldErr:  false,
+	},
+	{
+		title:      "comment with comment marker",
+		taskStr:    "buy milk",
+		commentStr: "# low-fat",
+		expectOut:  "buy milk # low-fat",
+		shouldErr:  false,
+	},
+	{
+		title:      "duplicate comment",
+		taskStr:    "buy milk # Remember to check for discounts.",
+		commentStr: "Remember to check for discounts.",
+		expectOut:  "buy milk # Remember to check for discounts.",
+		shouldErr:  false,
+	},
+	{
+		title:      "comment with leading/trailing spaces",
+		taskStr:    "buy milk",
+		commentStr: "   Remember to check for discounts.   ",
+		expectOut:  "buy milk # Remember to check for discounts.",
+		shouldErr:  false,
 	},
 }

@@ -118,8 +118,8 @@ func (t *Task) IsDirty() bool {
 
 // AppendSegment adds a segment to the end of the task string.
 //
-// If there is an inline comment, the segment is inserted before it. If the task
-// is a comment line, the segment is prepended.
+// If there is an inline comment, the segment is inserted before it.
+// If the task is a comment line, the segment is prepended.
 // The task is marked as dirty. Call Apply() to save the changes.
 func (t *Task) AppendSegment(segment string) error {
 	if segment == "" {
@@ -191,11 +191,9 @@ func (t *Task) InsertAfter(target, segment string) bool {
 //
 // The task is marked as dirty. Call Apply() to save the changes.
 func (t *Task) AddContext(context string) error {
-	if t.isDirty {
-		err := t.ensureParsed()
-		if err != nil {
-			return wrapError(err, "failed to re-parse dirty task before adding context")
-		}
+	err := t.ensureParsed()
+	if err != nil {
+		return wrapError(err, "failed to re-parse dirty task before adding context")
 	}
 
 	if t.IsCommentLine() {
@@ -223,11 +221,9 @@ func (t *Task) AddContext(context string) error {
 // It does not add projects to comment lines.
 // The task is marked as dirty. Call Apply() to save the changes.
 func (t *Task) AddProject(project string) error {
-	if t.isDirty {
-		err := t.ensureParsed()
-		if err != nil {
-			return wrapError(err, "failed to re-parse dirty task before adding project")
-		}
+	err := t.ensureParsed()
+	if err != nil {
+		return wrapError(err, "failed to re-parse dirty task before adding project")
 	}
 
 	if t.IsCommentLine() {
@@ -272,11 +268,9 @@ func (t *Task) SetPriority(priority string) error {
 
 	priorityMark := "(" + priority + ")"
 
-	if t.isDirty {
-		err := t.ensureParsed()
-		if err != nil {
-			return wrapError(err, "failed to re-parse dirty task before setting priority")
-		}
+	err := t.ensureParsed() // if dirty
+	if err != nil {
+		return wrapError(err, "failed to re-parse dirty task before setting priority")
 	}
 
 	currentText := t.String()
@@ -433,104 +427,6 @@ func (t *Task) Reopen() error {
 	return nil
 }
 
-// MarkDirty forces the task state to dirty.
-//
-// This method is useful when external modifications are made to the task
-// string via SetText(). It ensures that the next Apply() call will re-parse
-// the task to update its structured data.
-func (t *Task) MarkDirty() {
-	t.isDirty = true
-}
-
-// ----------------------------------------------------------------------------
-//  Delete (remove components from the task)
-// ----------------------------------------------------------------------------
-
-// RemoveSegment removes the first occurrence of a segment from the task.
-//
-// The task is marked as dirty. Call Apply() to save the changes.
-func (t *Task) RemoveSegment(segment string) error {
-	currentText := t.String()
-
-	newText, removed := removeSegmentWithBoundaries(currentText, segment)
-	if removed {
-		t.SetText(newText)
-	}
-
-	return nil
-}
-
-// RemoveContext removes a context tag from the task.
-//
-// It is a shorthand for RemoveSegment with context normalization.
-func (t *Task) RemoveContext(context string) error {
-	if t.isDirty {
-		err := t.ensureParsed()
-		if err != nil {
-			return wrapError(err, "failed to re-parse dirty task before removing context")
-		}
-	}
-
-	if t.IsCommentLine() {
-		return nil
-	}
-
-	normalized, err := normalizeTag(context, spec.PrefixContext)
-	if err != nil {
-		return wrapError(err, ErrEmptyContextValue.Error())
-	}
-
-	tag := spec.PrefixContext.String() + normalized
-
-	return t.RemoveSegment(tag)
-}
-
-// RemovePriority removes the priority from the task.
-//
-// The task is marked as dirty. Call Apply() to save the changes.
-func (t *Task) RemovePriority() error {
-	if t.isDirty {
-		err := t.ensureParsed()
-		if err != nil {
-			return wrapError(err, "failed to re-parse dirty task before removing priority")
-		}
-	}
-
-	currentPriority := t.Priority()
-	if currentPriority == "" {
-		return nil // No priority to remove.
-	}
-
-	priorityMark := "(" + currentPriority + ")"
-
-	return t.RemoveSegment(priorityMark)
-}
-
-// RemoveProject removes a project tag from the task.
-//
-// It is a shorthand for RemoveSegment with project normalization.
-func (t *Task) RemoveProject(project string) error {
-	if t.isDirty {
-		err := t.ensureParsed()
-		if err != nil {
-			return wrapError(err, "failed to re-parse dirty task before removing project")
-		}
-	}
-
-	if t.IsCommentLine() {
-		return nil
-	}
-
-	normalized, err := normalizeTag(project, spec.PrefixProject)
-	if err != nil {
-		return wrapError(err, ErrEmptyProjectValue.Error())
-	}
-
-	tag := spec.PrefixProject.String() + normalized
-
-	return t.RemoveSegment(tag)
-}
-
 // SetTag sets a key-value pair tag (e.g., "due:2024-12-25").
 // Updates existing key or appends new one.
 //
@@ -540,11 +436,9 @@ func (t *Task) RemoveProject(project string) error {
 // To avoid ambiguity, use a single key with comma-separated values
 // (e.g., "tag:value1,value2") for multiple values.
 func (t *Task) SetTag(key, value string) error {
-	if t.isDirty {
-		err := t.ensureParsed()
-		if err != nil {
-			return wrapError(err, "failed to re-parse dirty task before setting tag")
-		}
+	err := t.ensureParsed()
+	if err != nil {
+		return wrapError(err, "failed to re-parse dirty task before setting tag")
 	}
 
 	if t.IsCommentLine() {
@@ -579,6 +473,7 @@ func (t *Task) SetTag(key, value string) error {
 			oldTag := key + spec.SepKeyValue.String() + kv.Value
 			currentText := t.String()
 			newText := replaceFirst(currentText, oldTag, newTag)
+
 			t.SetText(newText)
 
 			return nil
@@ -589,14 +484,157 @@ func (t *Task) SetTag(key, value string) error {
 	return t.AppendSegment(newTag)
 }
 
+// SetInlineComment sets or updates the inline comment of the task.
+func (t *Task) SetInlineComment(comment string) error {
+	if spec.ContainsCtlChars(comment, t.AllowedCtrlChars()) {
+		return ErrValWithCtlChars
+	}
+
+	err := t.ensureParsed()
+	if err != nil {
+		return wrapError(err, "failed to re-parse dirty task before setting inline comment")
+	}
+
+	sep := spec.DelimSegments.String()     // " "
+	cmtMark := spec.PrefixComment.String() // "#"
+
+	// Normalize comment
+	normalized := strings.TrimSpace(comment)
+	normalized = strings.TrimPrefix(normalized, cmtMark+sep)
+	normalized = strings.TrimPrefix(normalized, cmtMark)
+
+	if normalized == "" {
+		return nil
+	}
+
+	newCmt := cmtMark + sep + normalized
+
+	if len(newCmt) > spec.MaxTaskLength {
+		return wrapError(ErrTaskTooLong,
+			"task w/comment length exceeds maximum allowed limit: %d characters",
+			spec.MaxTaskLength)
+	}
+
+	if t.IsCommentLine() {
+		// Overwrite all existing comment
+		t.SetText(newCmt)
+
+		return nil
+	}
+
+	if !t.HasInlineComment() {
+		// No existing inline comment: append new one
+		return t.AppendSegment(newCmt)
+	}
+
+	// Replace existing inline comment
+	currentText := t.String()
+	oldCmt := t.Comment()
+	newText := replaceFirst(currentText, oldCmt, newCmt)
+
+	t.SetText(newText)
+
+	return nil
+}
+
+// MarkDirty forces the task state to dirty.
+//
+// This method is useful when external modifications are made to the task
+// string via SetText(). It ensures that the next Apply() call will re-parse
+// the task to update its structured data.
+func (t *Task) MarkDirty() {
+	t.isDirty = true
+}
+
+// ----------------------------------------------------------------------------
+//  Delete (remove components from the task)
+// ----------------------------------------------------------------------------
+
+// RemoveSegment removes the first occurrence of a segment from the task.
+//
+// The task is marked as dirty. Call Apply() to save the changes.
+func (t *Task) RemoveSegment(segment string) error {
+	currentText := t.String()
+
+	newText, removed := removeSegmentWithBoundaries(currentText, segment)
+	if removed {
+		t.SetText(newText)
+	}
+
+	return nil
+}
+
+// RemoveContext removes a context tag from the task.
+//
+// It is a shorthand for RemoveSegment with context normalization.
+func (t *Task) RemoveContext(context string) error {
+	err := t.ensureParsed()
+	if err != nil {
+		return wrapError(err, "failed to re-parse dirty task before removing context")
+	}
+
+	if t.IsCommentLine() {
+		return nil
+	}
+
+	normalized, err := normalizeTag(context, spec.PrefixContext)
+	if err != nil {
+		return wrapError(err, ErrEmptyContextValue.Error())
+	}
+
+	tag := spec.PrefixContext.String() + normalized
+
+	return t.RemoveSegment(tag)
+}
+
+// RemovePriority removes the priority from the task.
+//
+// The task is marked as dirty. Call Apply() to save the changes.
+func (t *Task) RemovePriority() error {
+	err := t.ensureParsed()
+	if err != nil {
+		return wrapError(err, "failed to re-parse dirty task before removing priority")
+	}
+
+	currentPriority := t.Priority()
+	if currentPriority == "" {
+		return nil // No priority to remove.
+	}
+
+	priorityMark := "(" + currentPriority + ")"
+
+	return t.RemoveSegment(priorityMark)
+}
+
+// RemoveProject removes a project tag from the task.
+//
+// It is a shorthand for RemoveSegment with project normalization.
+func (t *Task) RemoveProject(project string) error {
+	err := t.ensureParsed()
+	if err != nil {
+		return wrapError(err, "failed to re-parse dirty task before removing project")
+	}
+
+	if t.IsCommentLine() {
+		return nil
+	}
+
+	normalized, err := normalizeTag(project, spec.PrefixProject)
+	if err != nil {
+		return wrapError(err, ErrEmptyProjectValue.Error())
+	}
+
+	tag := spec.PrefixProject.String() + normalized
+
+	return t.RemoveSegment(tag)
+}
+
 // RemoveTag removes a key-value pair tag by key name.
 // Does nothing if key does not exist.
 func (t *Task) RemoveTag(key string) error {
-	if t.isDirty {
-		err := t.ensureParsed()
-		if err != nil {
-			return wrapError(err, "failed to re-parse dirty task before removing tag")
-		}
+	err := t.ensureParsed()
+	if err != nil {
+		return wrapError(err, "failed to re-parse dirty task before removing tag")
 	}
 
 	if t.IsCommentLine() {
@@ -740,7 +778,7 @@ func insertSegmentAfterWithBoundaries(text, target, segment string) (string, boo
 
 // normalizeTag trims whitespace and an optional prefix from a tag.
 //
-// It returns an error if the tag is empty or contains spaces.
+// It returns an error if the tag is empty or contains only white spaces.
 func normalizeTag(value string, mark spec.Mark) (string, error) {
 	normalized := strings.TrimSpace(value)
 	if normalized == "" {

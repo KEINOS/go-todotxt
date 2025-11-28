@@ -31,13 +31,17 @@ Post signs around the neighborhood +GarageSale
 - Line breaks: `\n` (LF) or `\r\n` (CRLF).
 - One task per line.
 - Leading/trailing whitespaces ignored.
-- **Extension:** Lines starting with `#` are treated as comments (see [Comments](#comments)).
 - Completion: `x` (lowercase) followed by space.
 - Priority: `(A-Z)` in parentheses. Uppercase letters only.
 - Dates: `YYYY-MM-DD`.
 - Projects: `+` + non-whitespace.
 - Contexts: `@` + non-whitespace.
 - Metadata: `key:value`.
+- **Extended Rules of this package:**
+  - Lines starting with `#` are treated as comments (see [Comments](#comments)).
+  - Any text after " #" are treated as inline comment.
+  - Unless explicitly allowed, control characters are not permitted.
+  - Each task line should not be longer than 64 * 1024 Bytes (64KB. Default size of bufio.MaxScanTokenSize).
 
 ## Incomplete Tasks: 3 Format Rules
 

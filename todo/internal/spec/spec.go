@@ -28,6 +28,9 @@ const (
 	InvalidMark byte = 0x00
 	// InvalidRune is the zero value returned by Rune() for non-printable marks.
 	InvalidRune rune = 0
+	// MaxTaskLength is the maximum allowed length for a task string. Equivalent
+	// to bufio.MaxScanTokenSize (64K).
+	MaxTaskLength int = 64 * 1024 // 65536
 )
 
 // Mark is a single-byte marker character in the todo.txt format.

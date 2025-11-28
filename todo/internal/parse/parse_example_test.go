@@ -126,11 +126,13 @@ func ExampleParsed_Parse() {
 	fmt.Println("Updated priority:", parsed.Priority())
 	fmt.Println("Updated description:", parsed.Description())
 	fmt.Println("Updated comment:", parsed.Comment())
+	fmt.Printf("Allowed control characters: %q\n", parsed.AllowedCtrlChars())
 	// Output:
 	// Original description: Buy milk @store
 	// Updated priority: B
 	// Updated description: Buy milk @store
 	// Updated comment: # updated
+	// Allowed control characters: ['\t']
 }
 
 // ----------------------------------------------------------------------------

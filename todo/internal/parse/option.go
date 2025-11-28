@@ -1,7 +1,5 @@
 package parse
 
-import "slices"
-
 // Option defines a functional option for configuring behavior of Parsed.
 type Option func(*Parsed)
 
@@ -14,13 +12,6 @@ type Option func(*Parsed)
 // Control characters such as line breaks may affect parsing. Use with caution.
 func WithAllowedCtrlChars(allowedCtrlChars []rune) Option {
 	return func(p *Parsed) {
-		if p.allowedCtrlChars == nil {
-			p.allowedCtrlChars = []rune{}
-		}
-
-		if allowedCtrlChars != nil {
-			p.allowedCtrlChars = append(p.allowedCtrlChars, allowedCtrlChars...)
-			p.allowedCtrlChars = slices.Compact(p.allowedCtrlChars) // remove dups
-		}
+		p.AllowCtrlChars(allowedCtrlChars)
 	}
 }

@@ -244,6 +244,10 @@ func ExampleNew_allow_tabs_in_task_text_to_create_with_parse_option() {
 //  Task Method Examples
 // ============================================================================
 
+// ----------------------------------------------------------------------------
+//  Task.IsDirty
+// ----------------------------------------------------------------------------
+
 func ExampleTask_IsDirty() {
 	taskText := "get dirty"
 
@@ -281,6 +285,10 @@ func ExampleTask_IsDirty() {
 	// IsDirty (after Apply): false
 	// IsDirty (after MarkDirty): true
 }
+
+// ----------------------------------------------------------------------------
+//  Task.MarkDone / Complete / CompleteWithDate
+// ----------------------------------------------------------------------------
 
 // MarkDone is an alias for Complete() using current date.
 func ExampleTask_MarkDone() {
@@ -368,6 +376,10 @@ func ExampleTask_CompleteWithDate_specific() {
 	// Completed date: 2024-01-15
 }
 
+// This example shows completing a task without a date.
+// It is non-standard but common in case users just want to mark tasks as done.
+//
+// E.g., "buy milk" --> "x buy milk".
 func ExampleTask_CompleteWithDate_noDate() {
 	tsk, err := task.New("buy milk")
 	if err != nil {
@@ -388,6 +400,10 @@ func ExampleTask_CompleteWithDate_noDate() {
 	// Output:
 	// Task String: x buy milk
 }
+
+// ----------------------------------------------------------------------------
+//  Task.SetPriority
+// ----------------------------------------------------------------------------
 
 func ExampleTask_SetPriority() {
 	taskText := "buy milk @grocery +shopping"
@@ -473,6 +489,10 @@ func ExampleTask_SetPriority_withCompletedTask() {
 	// Priority: A
 }
 
+// ----------------------------------------------------------------------------
+//  Task.RemovePriority
+// ----------------------------------------------------------------------------
+
 func ExampleTask_RemovePriority() {
 	taskText := "(A) buy milk @grocery +shopping"
 
@@ -504,6 +524,10 @@ func ExampleTask_RemovePriority() {
 	// Priority:
 }
 
+// ----------------------------------------------------------------------------
+//  Task.AppendSegment
+// ----------------------------------------------------------------------------
+
 func ExampleTask_AppendSegment() {
 	tsk, err := task.New("buy milk")
 	if err != nil {
@@ -523,6 +547,10 @@ func ExampleTask_AppendSegment() {
 	fmt.Println(tsk)
 	// Output: buy milk @home
 }
+
+// ----------------------------------------------------------------------------
+//  Task.RemoveSegment
+// ----------------------------------------------------------------------------
 
 func ExampleTask_RemoveSegment() {
 	tsk, err := task.New("buy milk @home +shopping")
@@ -549,6 +577,10 @@ func ExampleTask_RemoveSegment() {
 	// Output: buy milk
 }
 
+// ----------------------------------------------------------------------------
+//  Task.AddContext
+// ----------------------------------------------------------------------------
+
 func ExampleTask_AddContext() {
 	tsk, err := task.New("buy milk +shopping")
 	if err != nil {
@@ -569,6 +601,10 @@ func ExampleTask_AddContext() {
 	// Output: buy milk +shopping @home
 }
 
+// ----------------------------------------------------------------------------
+//  Task.RemoveContext
+// ----------------------------------------------------------------------------
+
 func ExampleTask_RemoveContext() {
 	tsk, err := task.New("buy milk @home @work +shopping")
 	if err != nil {
@@ -588,6 +624,10 @@ func ExampleTask_RemoveContext() {
 	fmt.Println(tsk)
 	// Output: buy milk @work +shopping
 }
+
+// ----------------------------------------------------------------------------
+//  Task.InsertAfter
+// ----------------------------------------------------------------------------
 
 // InsertAfter does not check for duplicates or validity.
 func ExampleTask_InsertAfter() {
@@ -611,8 +651,12 @@ func ExampleTask_InsertAfter() {
 }
 
 // ============================================================================
-//  Option Examples
+//  Option Examples (Functional Options)
 // ============================================================================
+
+// ----------------------------------------------------------------------------
+//  WithContext
+// ----------------------------------------------------------------------------
 
 func ExampleWithContext_while_creation() {
 	tsk, err := task.New("buy milk",
@@ -650,6 +694,10 @@ func ExampleWithContext_after_creation() {
 	// Contexts: [home]
 }
 
+// ----------------------------------------------------------------------------
+//  WithoutContext
+// ----------------------------------------------------------------------------
+
 func ExampleWithoutContext_while_creation() {
 	tsk, err := task.New("buy milk @home @store",
 		task.WithoutContext("home"),
@@ -685,6 +733,10 @@ func ExampleWithoutContext_after_creation() {
 	// Current task: buy milk @store
 	// Contexts: [store]
 }
+
+// ----------------------------------------------------------------------------
+//  WithProject
+// ----------------------------------------------------------------------------
 
 func ExampleWithProject_while_creation() {
 	tsk, err := task.New("buy milk",
@@ -722,6 +774,10 @@ func ExampleWithProject_after_creation() {
 	// Projects: [shopping]
 }
 
+// ----------------------------------------------------------------------------
+//  WithoutProject
+// ----------------------------------------------------------------------------
+
 func ExampleWithoutProject_while_creation() {
 	tsk, err := task.New("buy milk +shopping +errands",
 		task.WithoutProject("shopping"),
@@ -757,6 +813,10 @@ func ExampleWithoutProject_after_creation() {
 	// Current task: buy milk +errands
 	// Projects: [errands]
 }
+
+// ----------------------------------------------------------------------------
+//  WithCompleted
+// ----------------------------------------------------------------------------
 
 func ExampleWithCompleted_default() {
 	tsk, err := task.New("buy milk")
@@ -815,6 +875,10 @@ func ExampleWithCompleted_withoutDate() {
 	// Completed Date:
 }
 
+// ----------------------------------------------------------------------------
+//  WithKeyValue
+// ----------------------------------------------------------------------------
+
 func ExampleWithKeyValue_while_creation() {
 	tsk, err := task.New("buy milk",
 		task.WithKeyValue("due", "2024-12-25"),
@@ -867,6 +931,10 @@ func ExampleWithKeyValue_updateExisting() {
 	// Key-Values: [{due 2024-12-25}]
 }
 
+// ----------------------------------------------------------------------------
+//  WithoutKeyValue
+// ----------------------------------------------------------------------------
+
 func ExampleWithoutKeyValue_while_creation() {
 	tsk, err := task.New("buy milk due:2024-12-25 priority:high",
 		task.WithoutKeyValue("due"),
@@ -899,6 +967,10 @@ func ExampleWithoutKeyValue_after_creation() {
 	// Current task: buy milk due:2024-12-25
 	// Key-Values: [{due 2024-12-25}]
 }
+
+// ----------------------------------------------------------------------------
+//  WithDueDate
+// ----------------------------------------------------------------------------
 
 func ExampleWithDueDate_while_creation() {
 	tsk, err := task.New("buy milk",
@@ -951,6 +1023,10 @@ func ExampleWithDueDate_updateExisting() {
 	// Key-Values: [{due 2024-12-25}]
 }
 
+// ----------------------------------------------------------------------------
+//  WithoutDueDate
+// ----------------------------------------------------------------------------
+
 func ExampleWithoutDueDate_while_creation() {
 	tsk, err := task.New("buy milk due:2024-12-25 priority:high",
 		task.WithoutDueDate(),
@@ -982,4 +1058,85 @@ func ExampleWithoutDueDate_after_creation() {
 	// Output:
 	// Current task: buy milk priority:high
 	// Key-Values: [{priority high}]
+}
+
+// ----------------------------------------------------------------------------
+//  WithInlineComment
+// ----------------------------------------------------------------------------
+
+func ExampleWithInlineComment_while_creation() {
+	tsk, err := task.New("buy milk",
+		task.WithInlineComment("don't forget to buy organic"),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Comment:", tsk.Comment())
+	// Output:
+	// Current task: buy milk # don't forget to buy organic
+	// Comment: # don't forget to buy organic
+}
+
+func ExampleWithInlineComment_after_creation() {
+	tsk, err := task.New("buy milk")
+	if err != nil {
+		panic(err)
+	}
+
+	err = tsk.Apply(
+		task.WithInlineComment("don't forget to buy organic"),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Comment:", tsk.Comment())
+	// Output:
+	// Current task: buy milk # don't forget to buy organic
+	// Comment: # don't forget to buy organic
+}
+
+func ExampleWithInlineComment_updateExisting() {
+	tsk, err := task.New("buy milk # buy low-fat")
+	if err != nil {
+		panic(err)
+	}
+
+	err = tsk.Apply(
+		task.WithInlineComment("buy organic"),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Comment:", tsk.Comment())
+	// Output:
+	// Current task: buy milk # buy organic
+	// Comment: # buy organic
+}
+
+func ExampleWithInlineComment_allowedCtrlChars() {
+	tsk, err := task.New("buy milk")
+	if err != nil {
+		panic(err)
+	}
+
+	// Add inline comment with tab character
+	err = tsk.Apply(
+		task.WithAllowedCtrlChars([]rune{'\t'}),
+		task.WithInlineComment("don't forget to\tbuy organic"),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Comment:", tsk.Comment())
+	// Output:
+	// Current task: buy milk # don't forget to	buy organic
+	// Comment: # don't forget to	buy organic
 }

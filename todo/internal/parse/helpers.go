@@ -45,35 +45,3 @@ func findInlineCommentPos(p *Parsed) int {
 
 	return notFound
 }
-
-// hasControlChars returns true if any control character is found in the text.
-//
-// This prevents parsing of malformed or potentially harmful input. To exclude
-// certain control characters from this check, provide them in the 'allow' slice.
-func hasControlChars(text string, allow []rune) bool {
-	isInAllowed := func(r rune) bool {
-		if len(allow) == 0 {
-			return false
-		}
-
-		return slices.Contains(allow, r)
-	}
-
-	// traverse each character in the text
-	for _, char := range text {
-		// Check for latin and other Unicode control characters
-		isControl := unicode.IsControl(char) || unicode.Is(unicode.C, char)
-
-		if !isControl {
-			continue
-		}
-
-		if isInAllowed(char) {
-			continue
-		}
-
-		return true // found disallowed control character
-	}
-
-	return false
-}
