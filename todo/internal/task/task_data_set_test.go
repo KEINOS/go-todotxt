@@ -1574,3 +1574,33 @@ var dataWithInlineComment = []struct {
 		shouldErr:  false,
 	},
 }
+
+// ----------------------------------------------------------------------------
+//  WithoutInlineComment
+// ----------------------------------------------------------------------------
+
+var dataWithoutInlineComment = []struct {
+	title     string
+	taskStr   string
+	expectOut string // expected Task.String() on success, err msg on failure
+	shouldErr bool
+}{
+	{
+		title:     "task string should remain unchanged when no inline comment exists",
+		taskStr:   "buy milk @shopA +errands due:2024-12-31",
+		expectOut: "buy milk @shopA +errands due:2024-12-31",
+		shouldErr: false,
+	},
+	{
+		title:     "comment line should remain unchanged when removing inline comment",
+		taskStr:   "# buy milk // remember to check discounts",
+		expectOut: "# buy milk // remember to check discounts",
+		shouldErr: false,
+	},
+	{
+		title:     "a word containing hash symbol should not be treated as inline comment",
+		taskStr:   "practice Étude#1 on piano # important",
+		expectOut: "practice Étude#1 on piano",
+		shouldErr: false,
+	},
+}

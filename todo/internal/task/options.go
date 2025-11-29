@@ -191,14 +191,18 @@ func WithInlineComment(comment string) Option {
 	}
 }
 
-// // WithoutInlineComment removes the inline comment.
-// func WithoutInlineComment() Option {
-// 	return func(_ *Task) error {
-// 		// to be implemented
-// 		return nil
-// 		// return t.RemoveInlineComment()
-// 	}
-// }
+// WithoutInlineComment removes the inline comment.
+// If the whole line is just a comment or does not have an inline comment, does
+// nothing.
+func WithoutInlineComment() Option {
+	return func(t *Task) error {
+		if t.Parsed == nil { // pre-parse phase
+			return nil
+		}
+
+		return t.RemoveInlineComment()
+	}
+}
 
 // // WithDescription sets the description.
 // func WithDescription(description string) Option {

@@ -1135,17 +1135,19 @@ func TestWithDueDate_multiple_calls(t *testing.T) {
 		require.NoError(t, err)
 
 		err = tsk.Apply(WithDueDate("2024-01-01"))
+
 		require.NoError(t, err)
 		require.Equal(t, "buy milk due:2024-01-01", tsk.String())
 
 		err = tsk.Apply(WithDueDate("2024-06-15"))
+
 		require.NoError(t, err)
 		require.Equal(t, "buy milk due:2024-06-15", tsk.String())
 
 		err = tsk.Apply(WithDueDate("2024-12-25"))
+
 		require.NoError(t, err)
 		require.Equal(t, "buy milk due:2024-12-25", tsk.String())
-
 		require.Equal(t, []parse.KeyValue{{Key: "due", Value: "2024-12-25"}}, tsk.KeyValues())
 	})
 
@@ -1153,13 +1155,23 @@ func TestWithDueDate_multiple_calls(t *testing.T) {
 		t.Parallel()
 
 		tsk, err := New("buy milk", WithDueDate("2024-01-01"))
+
 		require.NoError(t, err)
 		require.Equal(t, "buy milk due:2024-01-01", tsk.String())
 
 		err = tsk.Apply(WithDueDate("2024-12-25"))
+
 		require.NoError(t, err)
 		require.Equal(t, "buy milk due:2024-12-25", tsk.String())
 	})
+}
+
+// ----------------------------------------------------------------------------
+//  WithoutDueDate()
+// ----------------------------------------------------------------------------
+
+func TestWithoutDueDate(t *testing.T) {
+	t.Parallel()
 
 	t.Run("WithDueDate then WithoutDueDate removes due date", func(t *testing.T) {
 		t.Parallel()
@@ -1195,7 +1207,7 @@ func TestWithDueDate_multiple_calls(t *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
-//  WithInlineComment
+//  WithInlineComment()
 // ----------------------------------------------------------------------------
 
 func TestWithInlineComment(t *testing.T) {
@@ -1241,6 +1253,7 @@ func TestWithInlineComment(t *testing.T) {
 					"task string should remain unchanged on error")
 			} else {
 				require.NoError(t, err)
+
 				require.Equal(t, test.expectOut, tsk.String())
 			}
 		})
@@ -1264,6 +1277,78 @@ func TestWithInlineComment(t *testing.T) {
 	})
 }
 
+// ----------------------------------------------------------------------------
+//  WithoutInlineComment()
+// ----------------------------------------------------------------------------
+
+func TestWithoutInlineComment(t *testing.T) {
+	t.Parallel()
+
+	for index, test := range dataWithoutInlineComment {
+		title := fmt.Sprintf("Test #%d: %s", index+1, test.title)
+
+		t.Run(title+" (during New)", func(t *testing.T) {
+			t.Parallel()
+
+			tsk, err := New(test.taskStr,
+				WithoutInlineComment(),
+			)
+
+			if test.shouldErr {
+				require.Error(t, err)
+
+				require.Nil(t, tsk)
+				require.ErrorContains(t, err, test.expectOut)
+			} else {
+				require.NoError(t, err)
+
+				require.Equal(t, test.expectOut, tsk.String())
+			}
+		})
+
+		t.Run(title+" (during Apply)", func(t *testing.T) {
+			t.Parallel()
+
+			tsk, err := New(test.taskStr)
+			require.NoError(t, err)
+
+			err = tsk.Apply(
+				WithoutInlineComment(),
+			)
+
+			if test.shouldErr {
+				require.Error(t, err)
+
+				require.ErrorContains(t, err, test.expectOut)
+				require.Equal(t, test.taskStr, tsk.String(),
+					"task string should remain unchanged on error")
+			} else {
+				require.NoError(t, err)
+
+				require.Equal(t, test.expectOut, tsk.String())
+			}
+		})
+	}
+
+	t.Run("set bad task before WithoutInlineComment", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk")
+		require.NoError(t, err)
+
+		// set bad task text
+		tsk.SetText(tsk.String() + "\t")
+		tsk.isDirty = true
+
+		err = tsk.Apply(WithoutInlineComment())
+		require.Error(t, err,
+			"malformed task should cause error when removing inline comment")
+
+		require.ErrorContains(t, err,
+			"failed to apply option")
+	})
+}
+
 // ============================================================================
 //  Tests for private functions
 // ============================================================================
@@ -1279,10 +1364,11 @@ func Test_newError(t *testing.T) {
 		t.Parallel()
 
 		msg := "sample error message"
-		err := newError(msg)
 
+		err := newError(msg)
 		require.Error(t, err,
 			"newError() should not return nil")
+
 		require.ErrorContains(t, err, msg,
 			"Error message should match input")
 	})
@@ -1291,10 +1377,11 @@ func Test_newError(t *testing.T) {
 		t.Parallel()
 
 		errCode := 42
-		err := newError("sample error message with code: %d", errCode)
 
+		err := newError("sample error message with code: %d", errCode)
 		require.Error(t, err,
 			"newError() should not return nil")
+
 		require.ErrorContains(t, err, "sample error message with code: 42",
 			"Error message should match input")
 	})
@@ -1314,8 +1401,8 @@ func Test_wrapError(t *testing.T) {
 		var innerErr error = nil
 
 		wrappedMsg := "additional context"
-		err := wrapError(innerErr, wrappedMsg)
 
+		err := wrapError(innerErr, wrappedMsg)
 		require.NoError(t, err,
 			"nil error should return nil when wrapped")
 	})
@@ -1326,10 +1413,11 @@ func Test_wrapError(t *testing.T) {
 		innerErr := newError("inner error")
 
 		errCode := 42
-		err := wrapError(innerErr, "failed with error code: %d", errCode)
 
+		err := wrapError(innerErr, "failed with error code: %d", errCode)
 		require.Error(t, err,
 			"Wrapped error should not be nil")
+
 		require.ErrorContains(t, err, "failed with error code: 42",
 			"Wrapped message should contain formatted context")
 		require.ErrorIs(t, err, innerErr,
@@ -1354,10 +1442,12 @@ func Test_normalizeTag(t *testing.T) {
 
 			if test.shouldErr {
 				require.Error(t, err)
+
 				require.ErrorContains(t, err, test.expectOut,
 					"error message does not contain expected text")
 			} else {
 				require.NoError(t, err)
+
 				require.Equal(t, test.expectOut, normalized)
 			}
 		})

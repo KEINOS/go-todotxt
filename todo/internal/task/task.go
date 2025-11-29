@@ -665,6 +665,29 @@ func (t *Task) RemoveTag(key string) error {
 	return nil // Key not found
 }
 
+// RemoveInlineComment removes the inline comment.
+// If the whole line is just a comment or does not have an inline comment, does
+// nothing.
+// If the underlying task is malformed it will error.
+func (t *Task) RemoveInlineComment() error {
+	err := t.ensureParsed()
+	if err != nil {
+		return wrapError(err, "failed to re-parse dirty task before removing tag")
+	}
+
+	if t.IsCommentLine() {
+		return nil
+	}
+
+	if !t.HasInlineComment() {
+		return nil
+	}
+
+	comment := t.Comment()
+
+	return t.RemoveSegment(comment)
+}
+
 // ----------------------------------------------------------------------------
 //  Apply Changes (finalize modifications)
 // ----------------------------------------------------------------------------

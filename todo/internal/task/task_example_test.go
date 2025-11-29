@@ -1140,3 +1140,42 @@ func ExampleWithInlineComment_allowedCtrlChars() {
 	// Current task: buy milk # don't forget to	buy organic
 	// Comment: # don't forget to	buy organic
 }
+
+// ----------------------------------------------------------------------------
+//  WithoutInlineComment
+// ----------------------------------------------------------------------------
+
+func ExampleWithoutInlineComment_while_creation() {
+	tsk, err := task.New("buy milk # don't forget to buy organic",
+		task.WithoutInlineComment(),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Comment:", tsk.Comment())
+	// Output:
+	// Current task: buy milk
+	// Comment:
+}
+
+func ExampleWithoutInlineComment_after_creation() {
+	tsk, err := task.New("buy milk # don't forget to buy organic")
+	if err != nil {
+		panic(err)
+	}
+
+	err = tsk.Apply(
+		task.WithoutInlineComment(),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Comment:", tsk.Comment())
+	// Output:
+	// Current task: buy milk
+	// Comment:
+}
