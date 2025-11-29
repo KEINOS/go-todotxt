@@ -402,6 +402,36 @@ func ExampleTask_CompleteWithDate_noDate() {
 }
 
 // ----------------------------------------------------------------------------
+//  Task.Reopen
+// ----------------------------------------------------------------------------
+
+func ExampleTask_Reopen() {
+	// Completed task with completion date and creation date
+	taskText := "x (A) 2024-01-15 2024-01-01 buy milk @grocery +shopping"
+
+	tsk, err := task.New(taskText)
+	if err != nil {
+		panic(err)
+	}
+
+	err = tsk.Reopen()
+	if err != nil {
+		panic(err)
+	}
+
+	err = tsk.Apply()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Is completed:", tsk.IsDone())
+	fmt.Println("Task String:", tsk.String())
+	// Output:
+	// Is completed: false
+	// Task String: (A) 2024-01-01 buy milk @grocery +shopping
+}
+
+// ----------------------------------------------------------------------------
 //  Task.SetPriority
 // ----------------------------------------------------------------------------
 
