@@ -1210,6 +1210,7 @@ func TestWithoutDueDate(t *testing.T) {
 //  WithInlineComment()
 // ----------------------------------------------------------------------------
 
+//nolint:dupl // Similar to TestWithDescription is intentional.
 func TestWithInlineComment(t *testing.T) {
 	t.Parallel()
 
@@ -1353,6 +1354,7 @@ func TestWithoutInlineComment(t *testing.T) {
 //  WithDescription()
 // ----------------------------------------------------------------------------
 
+//nolint:dupl // Similar to TestWithInlineComment is intentional.
 func TestWithDescription(t *testing.T) {
 	t.Parallel()
 
