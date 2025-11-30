@@ -248,7 +248,7 @@ func (t *Task) AddProject(project string) error {
 //  Modify (update existing components)
 // ----------------------------------------------------------------------------
 
-// SetText updates the raw task string and marks it dirty.
+// SetText updates the whole underlying raw task string and marks it dirty.
 // Call Apply() to re-parse and sync structured data.
 func (t *Task) SetText(newText string) {
 	t.Parsed.SetText(newText)
@@ -423,6 +423,64 @@ func (t *Task) Reopen() error {
 	}
 
 	t.SetText(newText)
+
+	return nil
+}
+
+// SetDescription sets/ updates the description of the task.
+//
+// This option is useful when you want to change only the main description text but
+// keeping the task status. Such as completed, priority and dates.
+//
+// Example:
+//
+//	Original task: "(A) 2024-01-01 Call Alice +Work @Phone due:2024-01-05 # meeting notes"
+//	  WithDescription("Meet Bob +Personal @InPerson") -->
+//	Resulting task: "(A) 2024-01-01 Meet Bob +Personal @InPerson # meeting notes"
+//
+// Note that there is no "RemoveDescription". Use SetDescription("") to clear the
+// description or use SetText() to set the whole task text.
+func (t *Task) SetDescription(description string) error {
+	err := t.ensureParsed()
+	if err != nil {
+		return wrapError(err, "failed to re-parse dirty task before setting description")
+	}
+
+	if spec.ContainsCtlChars(description, t.AllowedCtrlChars()) {
+		return ErrValWithCtlChars
+	}
+
+	isEmpty := func(s string) bool {
+		return strings.TrimSpace(s) == ""
+	}
+
+	newDescription := strings.TrimRightFunc(description, unicode.IsSpace)
+
+	oldTaskStr := t.String()
+	oldDescription := t.Description()
+
+	// Both old and new descriptions contain inline comments: remove old comment
+	if spec.ContainsInlineComment(newDescription) && t.HasInlineComment() {
+		oldComment := spec.DelimSegments.String() + t.Comment()
+		oldTaskStr = strings.ReplaceAll(oldTaskStr, oldComment, "")
+	}
+
+	if (t.HasPriority() || t.IsCompleted()) && isEmpty(description) {
+		oldDescription = spec.DelimSegments.String() + oldDescription
+	}
+
+	newTaskStr := strings.ReplaceAll(oldTaskStr, oldDescription, newDescription)
+
+	if len(newTaskStr) > spec.MaxTaskLength {
+		return ErrTaskTooLong
+	}
+
+	if isEmpty(newDescription) {
+		// Clean up extra spaces if description is cleared.
+		newTaskStr = strings.TrimSpace(newTaskStr)
+	}
+
+	t.SetText(newTaskStr)
 
 	return nil
 }

@@ -204,20 +204,26 @@ func WithoutInlineComment() Option {
 	}
 }
 
-// // WithDescription sets the description.
-// func WithDescription(description string) Option {
-// 	return func(_ *Task) error {
-// 		// to be implemented
-// 		return nil
-// 		// return t.SetDescription(description)
-// 	}
-// }
+// WithDescription sets/overwrites the description keeping optional headers. Tags
+// (e.g., projects, contexts, key-values) are replaced as well.
+//
+// This option is useful when you want to change only the main description text but
+// keeping the task status. Such as completed, priority and dates.
+//
+// Example:
+//
+//	Original task: "(A) 2024-01-01 Call Alice +Work @Phone due:2024-01-05 # meeting notes"
+//	WithDescription("Meet Bob +Personal @InPerson") -->
+//	Resulting task: "(A) 2024-01-01 Meet Bob +Personal @InPerson # meeting notes"
+//
+// Note that there is no "WithoutDescription". Use WithDescription("") to clear
+// the description or use SetText() to set the whole task text.
+func WithDescription(description string) Option {
+	return func(t *Task) error {
+		if t.Parsed == nil { // pre-parse phase
+			return nil
+		}
 
-// // WithoutDescription removes the description.
-// func WithoutDescription() Option {
-// 	return func(_ *Task) error {
-// 		// to be implemented
-// 		return nil
-// 		// return t.RemoveDescription()
-// 	}
-// }
+		return t.SetDescription(description)
+	}
+}

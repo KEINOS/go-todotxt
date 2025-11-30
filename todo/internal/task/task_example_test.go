@@ -1209,3 +1209,42 @@ func ExampleWithoutInlineComment_after_creation() {
 	// Current task: buy milk
 	// Comment:
 }
+
+// ----------------------------------------------------------------------------
+//  WithDescription
+// ----------------------------------------------------------------------------
+
+func ExampleWithDescription_while_creation() {
+	tsk, err := task.New("x (A) 2024-01-01 buy low-fat milk @home # discount",
+		task.WithDescription("buy almond milk @grocery"),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Description:", tsk.Description())
+	// Output:
+	// Current task: x (A) 2024-01-01 buy almond milk @grocery # discount
+	// Description: buy almond milk @grocery
+}
+
+func ExampleWithDescription_after_creation() {
+	tsk, err := task.New("x (A) 2024-01-01 buy low-fat milk @home # discount")
+	if err != nil {
+		panic(err)
+	}
+
+	err = tsk.Apply(
+		task.WithDescription("buy almond milk @grocery"),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Current task:", tsk)
+	fmt.Println("Description:", tsk.Description())
+	// Output:
+	// Current task: x (A) 2024-01-01 buy almond milk @grocery # discount
+	// Description: buy almond milk @grocery
+}

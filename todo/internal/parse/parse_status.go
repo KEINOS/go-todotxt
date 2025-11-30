@@ -11,6 +11,11 @@ import (
 // ============================================================================
 //  Methods to obtain information about the current status of the task.
 
+// HasPriority returns true if the task has a priority segment.
+func (p *Parsed) HasPriority() bool {
+	return p.Priority() != ""
+}
+
 // HasInlineComment returns true if the task has an inline comment segment or
 // it is a comment line.
 func (p *Parsed) HasInlineComment() bool {

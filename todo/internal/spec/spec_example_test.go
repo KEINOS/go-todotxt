@@ -22,6 +22,10 @@ func Example() {
 	// Segment Delimiter: " "
 }
 
+// ============================================================================
+//  Method Examples
+// ============================================================================
+
 func ExampleMark_Byte() {
 	fmt.Printf("Project Prefix: %x\n", spec.PrefixProject.Byte())
 	fmt.Printf("Context Prefix: %x\n", spec.PrefixContext.Byte())
@@ -117,4 +121,37 @@ func ExampleMark_validation() {
 	// Valid 'A' - Byte: 0x41, Rune: 'A', String: "A"
 	// Invalid 0x1F - Byte: 0x00, Rune: '\x00', String: ""
 	// Mark is not printable, skipping
+}
+
+// ============================================================================
+//  Checker Function Examples
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+//  ContainsInlineComment()
+// ----------------------------------------------------------------------------
+
+func ExampleContainsInlineComment() {
+	// True cases
+	task := "This is a task +Project @Context # This is an inline comment"
+	fmt.Printf("Text with inline comment: %v\n",
+		spec.ContainsInlineComment(task))
+
+	task = "  # Leading spaces before comment"
+	fmt.Printf("Text with leading spaces before comment: %v\n",
+		spec.ContainsInlineComment(task))
+
+	// False cases
+	task = "This is a task +Project @Context with no comment"
+	fmt.Printf("Text without comment: %v\n",
+		spec.ContainsInlineComment(task))
+
+	task = "# This entire line is a comment"
+	fmt.Printf("Text as comment line: %v\n",
+		spec.ContainsInlineComment(task))
+	// Output:
+	// Text with inline comment: true
+	// Text with leading spaces before comment: true
+	// Text without comment: false
+	// Text as comment line: false
 }

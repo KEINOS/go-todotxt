@@ -1604,3 +1604,94 @@ var dataWithoutInlineComment = []struct {
 		shouldErr: false,
 	},
 }
+
+// ----------------------------------------------------------------------------
+//  WithDescription
+// ----------------------------------------------------------------------------
+
+var dataWithDescription = []struct {
+	title     string
+	taskStr   string
+	descStr   string
+	expectOut string // task.String() on success, err msg to contain on failure
+	shouldErr bool
+}{
+	{
+		title:     "empty descStr; task with status option markers (x,A)",
+		taskStr:   "x (A) buy milk due:2024-12-31 @shop +groceries # check discounts",
+		descStr:   "",
+		expectOut: "x (A) # check discounts",
+		shouldErr: false,
+	},
+	{
+		title:     "empty descStr; task with inline comment",
+		taskStr:   "buy milk due:2024-12-31 @shop +groceries # check discounts",
+		descStr:   "",
+		expectOut: "# check discounts",
+		shouldErr: false,
+	},
+	{
+		title:     "empty descStr; comment line task",
+		taskStr:   "# this is a comment line",
+		descStr:   "",
+		expectOut: "# this is a comment line",
+		shouldErr: false,
+	},
+	{
+		title:     "spaces only descStr",
+		taskStr:   "buy milk due:2024-12-31 @shop +groceries # check discounts",
+		descStr:   "   ",
+		expectOut: "# check discounts",
+		shouldErr: false,
+	},
+	{
+		title:     "descStr with the same description already present",
+		taskStr:   "buy milk due:2024-12-31 @shop +groceries   # low-fat",
+		descStr:   "buy milk due:2024-12-31 @shop +groceries",
+		expectOut: "buy milk due:2024-12-31 @shop +groceries   # low-fat",
+		shouldErr: false,
+	},
+	{
+		title:     "descStr with emojis, surrogate pairs and accented chars",
+		taskStr:   "buy milk due:2024-12-31 @shop +groceries # black friday sale",
+		descStr:   "Apply discount to customer's résumé purchase 🛒🔥💯",
+		expectOut: "Apply discount to customer's résumé purchase 🛒🔥💯 # black friday sale",
+		shouldErr: false,
+	},
+	{
+		title:     "descStr with leading/trailing spaces",
+		taskStr:   "buy milk due:2024-12-31 @shop +groceries # check discounts",
+		descStr:   "   remember to use coupons   ",
+		expectOut: "   remember to use coupons # check discounts",
+		shouldErr: false,
+	},
+	{
+		title:     "very short descStr",
+		taskStr:   "x (Z) buy milk due:2024-12-31 @shop +groceries # no receipts",
+		descStr:   "a",
+		expectOut: "x (Z) a # no receipts",
+		shouldErr: false,
+	},
+	{
+		title:     "descStr contains inline comment as well",
+		taskStr:   "buy milk # check discounts",
+		descStr:   "remember to use coupons # during sale",
+		expectOut: "remember to use coupons # during sale",
+		shouldErr: false,
+	},
+	// Error cases
+	{
+		title:     "descStr with control character",
+		taskStr:   "buy milk due:2024-12-31 @shop +groceries",
+		descStr:   "check\x01discounts",
+		expectOut: ErrValWithCtlChars.Error(),
+		shouldErr: true,
+	},
+	{
+		title:     "too long descStr",
+		taskStr:   "buy milk due:2024-12-31 @shop +groceries",
+		descStr:   strings.Repeat("a", spec.MaxTaskLength+1), // exceed max length
+		expectOut: ErrTaskTooLong.Error(),
+		shouldErr: true,
+	},
+}

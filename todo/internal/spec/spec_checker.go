@@ -2,12 +2,25 @@ package spec
 
 import (
 	"slices"
+	"strings"
 	"unicode"
 )
 
 // ============================================================================
 //  Helper Functions To Check Specifications
 // ============================================================================
+
+// ----------------------------------------------------------------------------
+//  Any text after " #" are treated as inline comment.
+// ----------------------------------------------------------------------------
+
+// ContainsInlineComment returns true if the text contains an inline comment
+// indicator (" #").
+func ContainsInlineComment(text string) bool {
+	inlineCommentIndicator := DelimSegments.String() + PrefixComment.String()
+
+	return strings.Contains(text, inlineCommentIndicator)
+}
 
 // ----------------------------------------------------------------------------
 //  Unless explicitly allowed, control characters are not permitted.

@@ -1349,6 +1349,76 @@ func TestWithoutInlineComment(t *testing.T) {
 	})
 }
 
+// ----------------------------------------------------------------------------
+//  WithDescription()
+// ----------------------------------------------------------------------------
+
+func TestWithDescription(t *testing.T) {
+	t.Parallel()
+
+	for index, test := range dataWithDescription {
+		title := fmt.Sprintf("Test #%d: %s", index+1, test.title)
+
+		t.Run(title+" (during New)", func(t *testing.T) {
+			t.Parallel()
+
+			tsk, err := New(test.taskStr,
+				WithDescription(test.descStr),
+			)
+
+			if test.shouldErr {
+				require.Error(t, err)
+
+				require.Nil(t, tsk)
+				require.ErrorContains(t, err, test.expectOut)
+			} else {
+				require.NoError(t, err)
+
+				require.Equal(t, test.expectOut, tsk.String())
+			}
+		})
+
+		t.Run(title+" (during Apply)", func(t *testing.T) {
+			t.Parallel()
+
+			tsk, err := New(test.taskStr)
+			require.NoError(t, err)
+
+			err = tsk.Apply(
+				WithDescription(test.descStr),
+			)
+
+			if test.shouldErr {
+				require.Error(t, err)
+
+				require.ErrorContains(t, err, test.expectOut)
+				require.Equal(t, test.taskStr, tsk.String(),
+					"task string should remain unchanged on error")
+			} else {
+				require.NoError(t, err)
+
+				require.Equal(t, test.expectOut, tsk.String())
+			}
+		})
+	}
+
+	t.Run("set bad task before WithDescription", func(t *testing.T) {
+		t.Parallel()
+
+		tsk, err := New("buy milk")
+		require.NoError(t, err)
+
+		tsk.SetText(tsk.String() + "\t") // not allowed control char
+
+		err = tsk.Apply(
+			WithDescription("check discounts"),
+		)
+		require.Error(t, err)
+
+		require.ErrorContains(t, err, "failed to re-parse dirty task before setting description")
+	})
+}
+
 // ============================================================================
 //  Tests for private functions
 // ============================================================================

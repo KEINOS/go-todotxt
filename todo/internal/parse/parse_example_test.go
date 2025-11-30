@@ -25,6 +25,7 @@ func ExampleFromTaskString() {
 	fmt.Println("Stringer:", parsed) // Equivalent to parsed.String()
 	fmt.Println("Is completed:", parsed.IsDone())
 	fmt.Println("Priority:", parsed.Priority())
+	fmt.Println("Has priority:", parsed.HasPriority())
 	fmt.Println("Date completed:", parsed.DateCompleted())
 	fmt.Println("Date created:", parsed.DateCreated())
 	fmt.Println("Contexts:", parsed.Contexts())
@@ -40,6 +41,7 @@ func ExampleFromTaskString() {
 	// Stringer: x (A) 2016-05-20 2016-05-18 Thank Mom for the meatballs +dinner @phone due:2016-05-25 # this is an inline-comment
 	// Is completed: true
 	// Priority: A
+	// Has priority: true
 	// Date completed: 2016-05-20
 	// Date created: 2016-05-18
 	// Contexts: [phone]
