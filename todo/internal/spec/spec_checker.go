@@ -11,15 +11,33 @@ import (
 // ============================================================================
 
 // ----------------------------------------------------------------------------
-//  Any text after " #" are treated as inline comment.
+//  Any text after "<space char>#" are treated as inline comment.
 // ----------------------------------------------------------------------------
 
-// ContainsInlineComment returns true if the text contains an inline comment
-// indicator (" #").
-func ContainsInlineComment(text string) bool {
-	inlineCommentIndicator := DelimSegments.String() + PrefixComment.String()
+// ContainsInlineComment returns the index and true if the text contains an
+// inline comment indicator (any Unicode space character followed by "#". e.g.
+// " #", "\t#").
+//
+// If not found, returns -1 and false.
+// Note that a comment line (starting with "#") is not considered as an inline
+// comment.
+func ContainsInlineComment(text string) (int, bool) {
+	idxCommentMark := strings.Index(text, PrefixComment.String())
 
-	return strings.Contains(text, inlineCommentIndicator)
+	// no comment mark found or is a comment line (starts with '#')
+	if idxCommentMark == -1 || idxCommentMark == 0 {
+		return -1, false
+	}
+
+	preChar := rune(text[idxCommentMark-1])
+	if !unicode.IsSpace(preChar) {
+		return -1, false
+	}
+
+	return idxCommentMark, true
+
+	// inlineCommentIndicator := DelimSegments.String() + PrefixComment.String()
+	// return strings.Contains(text, inlineCommentIndicator)
 }
 
 // ----------------------------------------------------------------------------

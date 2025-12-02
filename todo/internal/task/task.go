@@ -460,7 +460,8 @@ func (t *Task) SetDescription(description string) error {
 	oldDescription := t.Description()
 
 	// Both old and new descriptions contain inline comments: remove old comment
-	if spec.ContainsInlineComment(newDescription) && t.HasInlineComment() {
+	_, inputHasInlineComment := spec.ContainsInlineComment(newDescription)
+	if inputHasInlineComment && t.HasInlineComment() {
 		oldComment := spec.DelimSegments.String() + t.Comment()
 		oldTaskStr = strings.ReplaceAll(oldTaskStr, oldComment, "")
 	}

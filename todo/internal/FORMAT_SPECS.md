@@ -39,7 +39,7 @@ Post signs around the neighborhood +GarageSale
 - Metadata: `key:value`.
 - **Extended Rules of this package:**
   - Lines starting with `#` are treated as comments (see [Comments](#comments)).
-  - Any text after " #" are treated as inline comment.
+  - Any text after "#" with any Unicode space character are treated as inline comment.
   - Unless explicitly allowed, control characters are not permitted.
   - Each task line should not be longer than 64 * 1024 Bytes (64KB. Default size of bufio.MaxScanTokenSize).
 

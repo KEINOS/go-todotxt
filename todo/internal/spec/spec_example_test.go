@@ -132,26 +132,54 @@ func ExampleMark_validation() {
 // ----------------------------------------------------------------------------
 
 func ExampleContainsInlineComment() {
-	// True cases
-	task := "This is a task +Project @Context # This is an inline comment"
-	fmt.Printf("Text with inline comment: %v\n",
-		spec.ContainsInlineComment(task))
+	for index, task := range []struct {
+		text        string
+		expectIndex int
+		expectFound bool
+	}{
+		// True cases (treat as inline comment)
+		{
+			text:        "Task w/ +Project @Context # This is an inline comment",
+			expectIndex: 34,
+			expectFound: true,
+		},
+		{
+			text:        "  # Leading spaces before comment",
+			expectIndex: 2,
+			expectFound: true,
+		},
+		{
+			text: "Task w/\t# inline comment after tab",
+			// The index is byte-based; tab is a single byte
+			expectIndex: 8,
+			expectFound: true,
+		},
+		// False cases (no inline comment)
+		{text: "Task w/ +Project @Context with no comment",
+			expectIndex: -1,
+			expectFound: false,
+		},
+		{
+			text:        "# This entire line is a comment",
+			expectIndex: -1,
+			expectFound: false,
+		},
+		{
+			text:        "Task w/ key:value of url:http://example.com/page#fragment",
+			expectIndex: -1,
+			expectFound: false,
+		},
+	} {
+		pos, found := spec.ContainsInlineComment(task.text)
 
-	task = "  # Leading spaces before comment"
-	fmt.Printf("Text with leading spaces before comment: %v\n",
-		spec.ContainsInlineComment(task))
-
-	// False cases
-	task = "This is a task +Project @Context with no comment"
-	fmt.Printf("Text without comment: %v\n",
-		spec.ContainsInlineComment(task))
-
-	task = "# This entire line is a comment"
-	fmt.Printf("Text as comment line: %v\n",
-		spec.ContainsInlineComment(task))
+		fmt.Printf("#%d: Input: %q, Pos: %d, Found: %v\n",
+			index+1, task.text, pos, found)
+	}
 	// Output:
-	// Text with inline comment: true
-	// Text with leading spaces before comment: true
-	// Text without comment: false
-	// Text as comment line: false
+	// #1: Input: "Task w/ +Project @Context # This is an inline comment", Pos: 26, Found: true
+	// #2: Input: "  # Leading spaces before comment", Pos: 2, Found: true
+	// #3: Input: "Task w/\t# inline comment after tab", Pos: 8, Found: true
+	// #4: Input: "Task w/ +Project @Context with no comment", Pos: -1, Found: false
+	// #5: Input: "# This entire line is a comment", Pos: -1, Found: false
+	// #6: Input: "Task w/ key:value of url:http://example.com/page#fragment", Pos: -1, Found: false
 }
