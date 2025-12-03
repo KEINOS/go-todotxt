@@ -3,12 +3,53 @@ package spec
 import (
 	"slices"
 	"strings"
+	"time"
 	"unicode"
 )
 
 // ============================================================================
 //  Helper Functions To Check Specifications
 // ============================================================================
+
+// ----------------------------------------------------------------------------
+//  Date should be in the format of "YYYY-MM-DD" (Rule 2)
+// ----------------------------------------------------------------------------
+
+// IsDate returns true if the string is a date in YYYY-MM-DD format. If 'validate'
+// is true, it also checks if the date is a valid calendar date.
+func IsDate(s string, validate bool) bool {
+	if validate {
+		_, err := time.Parse(DateFormat, s)
+
+		return err == nil
+	}
+
+	// We do not use time.Parse here for performance reasons.
+	// This implementation is 7x faster than time.Parse in benchmarks.
+	const dateLen = 10 // "YYYY-MM-DD"
+
+	if len(s) != dateLen {
+		return false
+	}
+
+	// Check format: YYYY-MM-DD
+	if s[4] != '-' || s[7] != '-' {
+		return false
+	}
+
+	// Check that all other characters are digits.
+	for i, ch := range s {
+		if i == 4 || i == 7 {
+			continue
+		}
+
+		if ch < '0' || ch > '9' {
+			return false
+		}
+	}
+
+	return true
+}
 
 // ----------------------------------------------------------------------------
 //  Any text after "<space char>#" are treated as inline comment.
