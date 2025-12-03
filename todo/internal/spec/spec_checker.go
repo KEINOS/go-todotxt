@@ -17,9 +17,9 @@ import (
 
 // IsDate returns true if the string is a date in YYYY-MM-DD format. If 'validate'
 // is true, it also checks if the date is a valid calendar date.
-func IsDate(s string, validate bool) bool {
+func IsDate(text string, validate bool) bool {
 	if validate {
-		_, err := time.Parse(DateFormat, s)
+		_, err := time.Parse(DateFormat, text)
 
 		return err == nil
 	}
@@ -28,17 +28,17 @@ func IsDate(s string, validate bool) bool {
 	// This implementation is 7x faster than time.Parse in benchmarks.
 	const dateLen = 10 // "YYYY-MM-DD"
 
-	if len(s) != dateLen {
+	if len(text) != dateLen {
 		return false
 	}
 
 	// Check format: YYYY-MM-DD
-	if s[4] != '-' || s[7] != '-' {
+	if text[4] != '-' || text[7] != '-' {
 		return false
 	}
 
 	// Check that all other characters are digits.
-	for i, ch := range s {
+	for i, ch := range text {
 		if i == 4 || i == 7 {
 			continue
 		}
