@@ -164,8 +164,8 @@ func ExampleParsed_segments_type_listing() {
 			isSegType = "project tag"
 		case seg.IsTagContext():
 			isSegType = "context tag"
-		case seg.IsKeyValue():
-			isSegType = "key-value pair"
+		case seg.IsTagKeyValue():
+			isSegType = "key-value pair tag"
 		case seg.IsComment():
 			isSegType = "comment"
 		case seg.IsPlainText():
@@ -185,7 +185,7 @@ func ExampleParsed_segments_type_listing() {
 	// 08: meatballs       (plain text)
 	// 09: +dinner         (project tag)
 	// 10: @phone          (context tag)
-	// 11: due:2016-05-25  (key-value pair)
+	// 11: due:2016-05-25  (key-value pair tag)
 	// 12: #               (comment)
 	// 13: comment         (plain text)
 }

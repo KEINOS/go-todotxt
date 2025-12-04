@@ -209,9 +209,9 @@ func TestSegment_IsKeyValue(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual := test.input.IsKeyValue()
+		actual := test.input.IsTagKeyValue()
 		require.Equal(t, test.expected, actual,
-			"IsKeyValue(%q) should return %v", test.input, test.expected)
+			"IsTagKeyValue(%q) should return %v", test.input, test.expected)
 	}
 }
 

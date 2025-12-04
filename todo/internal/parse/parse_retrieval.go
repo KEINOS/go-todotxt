@@ -208,7 +208,7 @@ func (p *Parsed) KeyValues() []KeyValue {
 	index := p.consumeHeadParts() // Skip done mark and priority
 
 	for _, seg := range p.Segments[index:] {
-		if !seg.IsKeyValue() {
+		if !seg.IsTagKeyValue() {
 			continue
 		}
 

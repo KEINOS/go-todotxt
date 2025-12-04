@@ -96,10 +96,10 @@ func (s Segment) IsTagContext() bool {
 	return len(s) > 1 && rune(s[0]) == spec.PrefixContext.Rune()
 }
 
-// IsKeyValue returns true if the segment is a key-value pair like "key:value".
+// IsTagKeyValue returns true if the segment is a key-value pair like "key:value".
 // Value may contain colons (e.g., "url:https://example.com").
 // Returns false for empty key, empty value, or missing separator.
-func (s Segment) IsKeyValue() bool {
+func (s Segment) IsTagKeyValue() bool {
 	str := string(s)
 	sep := spec.SepKeyValue.String()
 	colonIndex := strings.Index(str, sep)
@@ -123,7 +123,7 @@ func (s Segment) IsPlainText() bool {
 		!s.IsDate() &&
 		!s.IsTagProject() &&
 		!s.IsTagContext() &&
-		!s.IsKeyValue() &&
+		!s.IsTagKeyValue() &&
 		!s.IsComment()
 }
 
