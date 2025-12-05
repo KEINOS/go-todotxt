@@ -1,17 +1,19 @@
 package segment
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 // ============================================================================
-//  Tests for Segment methods
+//  Segment methods
 // ============================================================================
 
 // ----------------------------------------------------------------------------
-//  Tests for Segment.IsMarkCompletion()
+//  Segment.IsMarkCompletion()
 // ----------------------------------------------------------------------------
 
 func TestSegment_IsMarkCompletion(t *testing.T) {
@@ -37,7 +39,7 @@ func TestSegment_IsMarkCompletion(t *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
-//  Tests for segment.IsMarkPriority()
+//  segment.IsMarkPriority()
 // ----------------------------------------------------------------------------
 
 func TestSegment_IsMarkPriority(t *testing.T) {
@@ -67,7 +69,7 @@ func TestSegment_IsMarkPriority(t *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
-//  Tests for segment.IsDate()
+//  segment.IsDate()
 // ----------------------------------------------------------------------------
 
 func TestSegment_IsDate(t *testing.T) {
@@ -99,7 +101,7 @@ func TestSegment_IsDate(t *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
-//  Tests for segment.IsTagProject()
+//  segment.IsTagProject()
 // ----------------------------------------------------------------------------
 
 func TestSegment_IsTagProject(t *testing.T) {
@@ -133,7 +135,7 @@ func TestSegment_IsTagProject(t *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
-//  Tests for segment.IsTagContext()
+//  segment.IsTagContext()
 // ----------------------------------------------------------------------------
 
 func TestSegment_IsTagContext(t *testing.T) {
@@ -167,7 +169,7 @@ func TestSegment_IsTagContext(t *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
-//  Tests for segment.IsKeyValue()
+//  segment.IsKeyValue()
 // ----------------------------------------------------------------------------
 
 func TestSegment_IsKeyValue(t *testing.T) {
@@ -216,7 +218,7 @@ func TestSegment_IsKeyValue(t *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
-//  Tests for segment.IsComment()
+//  segment.IsComment()
 // ----------------------------------------------------------------------------
 
 func TestSegment_IsComment(t *testing.T) {
@@ -243,7 +245,7 @@ func TestSegment_IsComment(t *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
-//  Tests for segment.IsPlainText()
+//  segment.IsPlainText()
 // ----------------------------------------------------------------------------
 
 func TestSegment_IsPlainText(t *testing.T) {
@@ -270,5 +272,97 @@ func TestSegment_IsPlainText(t *testing.T) {
 		actual := test.input.IsPlainText()
 		require.Equal(t, test.expected, actual,
 			"IsPlainText(%q) should return %v", test.input, test.expected)
+	}
+}
+
+// ============================================================================
+//  Segments methods
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+//  Segments.Types()
+// ----------------------------------------------------------------------------
+
+func TestSegments_Types(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		segments Segments
+		want     Type
+	}{
+		{
+			name:     "empty segments",
+			segments: Segments{},
+			want:     Undefined,
+		},
+		{
+			name: "single type",
+			segments: Segments{
+				Segment("x"),
+			},
+			want: MarkCompletion,
+		},
+		{
+			name: "multiple types",
+			segments: Segments{
+				Segment("x"),
+				Segment("(A)"),
+				Segment("+project"),
+				Segment("@context"),
+			},
+			want: MarkCompletion | MarkPriority | TagProject | TagContext,
+		},
+		{
+			name: "duplicate types",
+			segments: Segments{
+				Segment("+proj1"),
+				Segment("+proj2"),
+			},
+			want: TagProject, // Should not duplicate
+		},
+	}
+
+	for index, tt := range tests {
+		title := fmt.Sprintf("Test #%d: %s", index+1, tt.name)
+
+		t.Run(title, func(t *testing.T) {
+			t.Parallel()
+
+			got := tt.segments.Types()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+// ----------------------------------------------------------------------------
+//  Type.String()
+// ----------------------------------------------------------------------------
+
+func TestType_String(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		input    Type
+		expected string
+	}{
+		// standard elements
+		{MarkCompletion, "completion mark"},
+		{MarkPriority, "priority mark"},
+		{Date, "date"},
+		{TagProject, "project tag"},
+		{TagContext, "context tag"},
+		{TagKeyValue, "key-value pair tag"},
+		{PlainText, "plain text"},
+		{MarkComment, "comment prefix"},
+		// edge cases
+		{Undefined, "undefined"},
+		{Type(9999), "undefined"}, // Invalid/unknown value
+	}
+
+	for _, test := range tests {
+		actual := test.input.String()
+		require.Equal(t, test.expected, actual,
+			"Type(%d).String() should return %q", test.input, test.expected)
 	}
 }
