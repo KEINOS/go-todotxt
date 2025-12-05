@@ -267,6 +267,57 @@ func TestMark_constants(t *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
+//  IsDate()
+// ----------------------------------------------------------------------------
+
+func TestIsDate(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		input          string
+		validate       bool
+		expectedResult bool
+	}{
+		// Valid dates
+		{"2024-01-01", false, true},
+		{"2024-12-31", false, true},
+		{"2024-02-29", true, true},  // Leap year
+		{"1234-56-78", false, true}, // validation is off. valid XXXX-XX-XX format
+
+		// Invalid format
+		{"20240101", false, false},
+		{"24-01-01", false, false},
+		{"2024/01/01", false, false},
+		{"2024-1-1", false, false},
+		{"1234-56-78", true, false}, // validation is on. invalid date
+
+		// Invalid dates
+		{"2024-02-30", true, false},
+		{"2024-13-01", true, false},
+		{"2024-00-10", true, false},
+		{"2024-04-31", true, false},
+
+		// Non-date strings
+		{"date-is-10", false, false}, // XXXX-XX-XX but not a date
+		{"hello-world", false, false},
+		{"1234567890", false, false},
+		{"", false, false},
+	}
+
+	for index, test := range tests {
+		title := fmt.Sprintf("Test #%d: IsDate('%s', %v)", index+1, test.input, test.validate)
+
+		t.Run(title, func(t *testing.T) {
+			t.Parallel()
+
+			result := IsDate(test.input, test.validate)
+			require.Equal(t, test.expectedResult, result,
+				"IsDate('%s', %v) should return %v", test.input, test.validate, test.expectedResult)
+		})
+	}
+}
+
+// ----------------------------------------------------------------------------
 //  ContainsCtlChars()
 // ----------------------------------------------------------------------------
 

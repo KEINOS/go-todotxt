@@ -128,6 +128,50 @@ func ExampleMark_validation() {
 // ============================================================================
 
 // ----------------------------------------------------------------------------
+//  IsDate()
+// ----------------------------------------------------------------------------
+
+func ExampleIsDate() {
+	sampleDate := "2024-12-31"    // valid date
+	notADate := "milk"            // not a date
+	invalidMonth := "2024-13-01"  // valid format but bad month
+	invalidFormat := "31-12-2024" // bad format (not YYYY-MM-DD)
+
+	// validation disabled
+	validate := false
+
+	fmt.Printf("IsDate(%q, %v): %v\n", sampleDate, validate,
+		spec.IsDate(sampleDate, validate))
+	fmt.Printf("IsDate(%q, %v): %v\n", notADate, validate,
+		spec.IsDate(notADate, validate))
+	fmt.Printf("IsDate(%q, %v): %v\n", invalidMonth, validate,
+		spec.IsDate(invalidMonth, validate))
+	fmt.Printf("IsDate(%q, %v): %v\n", invalidFormat, validate,
+		spec.IsDate(invalidFormat, validate))
+
+	// validation enabled
+	validate = true
+
+	fmt.Printf("IsDate(%q, %v): %v\n", sampleDate, validate,
+		spec.IsDate(sampleDate, validate))
+	fmt.Printf("IsDate(%q, %v): %v\n", notADate, validate,
+		spec.IsDate(notADate, validate))
+	fmt.Printf("IsDate(%q, %v): %v\n", invalidMonth, validate,
+		spec.IsDate(invalidMonth, validate))
+	fmt.Printf("IsDate(%q, %v): %v\n", invalidFormat, validate,
+		spec.IsDate(invalidFormat, validate))
+	// Output:
+	// IsDate("2024-12-31", false): true
+	// IsDate("milk", false): false
+	// IsDate("2024-13-01", false): true
+	// IsDate("31-12-2024", false): false
+	// IsDate("2024-12-31", true): true
+	// IsDate("milk", true): false
+	// IsDate("2024-13-01", true): false
+	// IsDate("31-12-2024", true): false
+}
+
+// ----------------------------------------------------------------------------
 //  ContainsInlineComment()
 // ----------------------------------------------------------------------------
 
