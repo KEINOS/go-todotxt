@@ -45,6 +45,9 @@ const (
 //
 // Valid marks are printable ASCII characters in the range 0x20 (space) to 0x7E
 // (tilde). Control characters and extended ASCII are not valid markers.
+//
+// Type conversion methods (Byte, Rune, String) return zero values for
+// non-printable marks.
 type Mark byte
 
 // Byte returns the byte value, or InvalidMark (0x00) if not printable.
@@ -54,6 +57,15 @@ func (m Mark) Byte() byte {
 	}
 
 	return byte(m)
+}
+
+// IsPrintable reports whether the Mark is a printable ASCII character.
+//
+// Printable ASCII characters are in the range 0x20 (space) to 0x7E (tilde).
+// Control characters (0x00-0x1F, 0x7F) and extended bytes (0x80-0xFF) return
+// false.
+func (m Mark) IsPrintable() bool {
+	return m >= 0x20 && m <= 0x7E
 }
 
 // Rune returns the rune value, or InvalidRune (0) if not printable.
@@ -72,13 +84,4 @@ func (m Mark) String() string {
 	}
 
 	return string(m)
-}
-
-// IsPrintable reports whether the Mark is a printable ASCII character.
-//
-// Printable ASCII characters are in the range 0x20 (space) to 0x7E (tilde).
-// Control characters (0x00-0x1F, 0x7F) and extended bytes (0x80-0xFF) return
-// false.
-func (m Mark) IsPrintable() bool {
-	return m >= 0x20 && m <= 0x7E
 }
