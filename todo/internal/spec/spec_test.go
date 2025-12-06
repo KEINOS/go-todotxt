@@ -71,7 +71,7 @@ func TestMark_IsPrintable(t *testing.T) {
 func TestMark_constants(t *testing.T) {
 	t.Parallel()
 
-	for _, c := range []struct {
+	for index, markConst := range []struct {
 		name string
 		mark Mark
 	}{
@@ -85,11 +85,13 @@ func TestMark_constants(t *testing.T) {
 		{"WrapPriorityOpen", WrapPriorityOpen},
 		{"WrapPriorityClose", WrapPriorityClose},
 	} {
-		t.Run(c.name+" is printable", func(t *testing.T) {
+		title := fmt.Sprintf("Test #%d: %s", index+1, markConst.name)
+
+		t.Run(title, func(t *testing.T) {
 			t.Parallel()
 
-			require.True(t, c.mark.IsPrintable(),
-				"%s (0x%02X) should be a printable ASCII character", c.name, c.mark)
+			require.True(t, markConst.mark.IsPrintable(),
+				"%s (0x%02X) should be a printable ASCII character", markConst.name, markConst.mark)
 		})
 	}
 }
@@ -144,7 +146,7 @@ func TestIsPriorityLetter(t *testing.T) {
 	for index, test := range testdata.Priorities {
 		title := fmt.Sprintf("Test #%d: %s", index+1, test.Title)
 
-		t.Run(title+" (IsPriorityLetter)", func(t *testing.T) {
+		t.Run(title, func(t *testing.T) {
 			t.Parallel()
 
 			expect := test.IsPriorityLetter
@@ -167,7 +169,7 @@ func TestIsPriorityMark(t *testing.T) {
 	for index, test := range testdata.Priorities {
 		title := fmt.Sprintf("Test #%d: %s", index+1, test.Title)
 
-		t.Run(title+" (IsPriorityMark)", func(t *testing.T) {
+		t.Run(title, func(t *testing.T) {
 			t.Parallel()
 
 			expect := test.IsPriorityMark

@@ -234,6 +234,7 @@ func BenchmarkIsPriorityLetter(b *testing.B) {
 		}
 
 		ch := letter[0]
+
 		return ch >= 'A' && ch <= 'Z'
 	}
 
