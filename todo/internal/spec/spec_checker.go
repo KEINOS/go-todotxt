@@ -12,11 +12,44 @@ import (
 // ============================================================================
 
 // ----------------------------------------------------------------------------
+//  Priority should be an uppercase letter A-Z in parentheses (Rule 1)
+// ----------------------------------------------------------------------------
+
+// IsPriorityLetter returns true if the letter is an uppercase letter A-Z.
+func IsPriorityLetter(letter string) bool {
+	return len(letter) == 1 && letter[0] >= 'A' && letter[0] <= 'Z'
+}
+
+// IsPriorityMark returns true if the string is a valid priority mark.
+//
+// A valid priority mark is exactly 3 characters: '(', an uppercase letter A-Z,
+// and ')'. For example: "(A)", "(B)", "(Z)".
+//
+// Examples:
+//   - "(A)" → true
+//   - "(Z)" → true
+//   - "(a)" → false (lowercase)
+//   - "(1)" → false (not a letter)
+//   - "(AA)" → false (too long)
+//   - "A" → false (missing parentheses)
+func IsPriorityMark(seg string) bool {
+	if len(seg) != PriorityLen {
+		return false
+	}
+
+	return seg[0] == WrapPriorityOpen.Byte() &&
+		seg[2] == WrapPriorityClose.Byte() &&
+		seg[1] >= 'A' && seg[1] <= 'Z'
+}
+
+// ----------------------------------------------------------------------------
 //  Date should be in the format of "YYYY-MM-DD" (Rule 2)
 // ----------------------------------------------------------------------------
 
-// IsDate returns true if the string is a date in YYYY-MM-DD format. If 'validate'
-// is true, it also checks if the date is a valid calendar date.
+// IsDate returns true if the string is a date in YYYY-MM-DD format.
+//
+// If 'validate' is true, it also checks if the date is a valid calendar date,
+// but it is 12x slower and more alloc than format-only check (validate=false).
 func IsDate(seg string, validate bool) bool {
 	if validate {
 		_, err := time.Parse(DateFormat, seg)
@@ -25,10 +58,8 @@ func IsDate(seg string, validate bool) bool {
 	}
 
 	// We do not use time.Parse here for performance reasons.
-	// This implementation is 7x faster than time.Parse in benchmarks.
-	const dateLen = 10 // "YYYY-MM-DD"
-
-	if len(seg) != dateLen {
+	// This implementation is 12x faster than time.Parse in benchmarks.
+	if len(seg) != DateLen {
 		return false
 	}
 
@@ -40,7 +71,7 @@ func IsDate(seg string, validate bool) bool {
 	// Check that all other characters are digits.
 	for i, ch := range seg {
 		if i == 4 || i == 7 {
-			continue
+			continue // skip hyphens
 		}
 
 		if ch < '0' || ch > '9' {

@@ -90,6 +90,34 @@ func ExampleSegment_Is() {
 	// false
 }
 
+func ExampleSegment_IsDate() {
+	seg1 := segment.Segment("2024-06-15")
+	seg2 := segment.Segment("2024-02-30") // invalid date but valid format
+	seg3 := segment.Segment("not-a-date")
+
+	fmt.Printf("Is '%s' a date? --> %v\n", seg1, seg1.IsDate())
+	fmt.Printf("Is '%s' a date? --> %v\n", seg2, seg2.IsDate())
+	fmt.Printf("Is '%s' a date? --> %v\n", seg3, seg3.IsDate())
+	// Output:
+	// Is '2024-06-15' a date? --> true
+	// Is '2024-02-30' a date? --> true
+	// Is 'not-a-date' a date? --> false
+}
+
+func ExampleSegment_IsDateValid() {
+	seg1 := segment.Segment("2024-02-29") // valid leap year date
+	seg2 := segment.Segment("2024-06-31") // invalid date
+	seg3 := segment.Segment("not-a-date") // invalid format
+
+	fmt.Printf("Is '%s' a valid date? --> %v\n", seg1, seg1.IsDateValid())
+	fmt.Printf("Is '%s' a valid date? --> %v\n", seg2, seg2.IsDateValid())
+	fmt.Printf("Is '%s' a valid date? --> %v\n", seg3, seg3.IsDateValid())
+	// Output:
+	// Is '2024-02-29' a valid date? --> true
+	// Is '2024-06-31' a valid date? --> false
+	// Is 'not-a-date' a valid date? --> false
+}
+
 // ----------------------------------------------------------------------------
 //  Type: Segments
 // ----------------------------------------------------------------------------

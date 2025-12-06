@@ -2,9 +2,9 @@ package spec
 
 import "testing"
 
-// ----------------------------------------------------------------------------
-//  Benchmark: IsPrintable implementations
-// ----------------------------------------------------------------------------
+// ============================================================================
+//  Implemtation examples for IsPrintable()
+// ============================================================================
 
 // isPrintableCurrentImpl is the current implementation using two comparisons.
 func isPrintableCurrentImpl(m byte) bool {
@@ -177,4 +177,85 @@ func TestIsPrintableImplementations(t *testing.T) {
 			t.Errorf("LookupTable(0x%02X): got %v, want %v", val, got, expected)
 		}
 	}
+}
+
+func BenchmarkIsDate(b *testing.B) {
+	tests := []string{
+		// Valid dates
+		"2024-01-01",
+		"2024-12-31",
+		"2024-02-29", // leap year
+		"1234-56-78", // validation is off. valid XXXX-XX-XX format
+
+		// Invalid format
+		"20240101",
+		"24-01-01",
+		"2024/01/01",
+		"2024-1-1",
+
+		// Invalid dates
+		"2024-02-30",
+		"2024-13-01",
+		"2024-00-10",
+		"2024-04-31",
+
+		// Non-date strings
+		"date-is-10", // XXXX-XX-XX but not a date
+		"hello-world",
+		"1234567890",
+		"",
+	}
+
+	b.Run("validation off", func(b *testing.B) {
+		b.ResetTimer()
+
+		for range b.N {
+			for _, input := range tests {
+				_ = IsDate(input, false)
+			}
+		}
+	})
+
+	b.Run("validation on", func(b *testing.B) {
+		b.ResetTimer()
+
+		for range b.N {
+			for _, input := range tests {
+				_ = IsDate(input, true)
+			}
+		}
+	})
+}
+
+func BenchmarkIsPriorityLetter(b *testing.B) {
+	fn1 := func(letter string) bool {
+		if len(letter) != 1 {
+			return false
+		}
+
+		ch := letter[0]
+		return ch >= 'A' && ch <= 'Z'
+	}
+
+	letters := []string{"A", "M", "Z", "a", "1", "", "AA"}
+
+	b.Run("Original", func(b *testing.B) {
+		b.ResetTimer()
+
+		for range b.N {
+			for _, letter := range letters {
+				_ = IsPriorityLetter(letter)
+			}
+		}
+	})
+
+	b.Run("Fn1", func(b *testing.B) {
+		b.ResetTimer()
+
+		for range b.N {
+			for _, letter := range letters {
+				_ = fn1(letter)
+			}
+		}
+	})
 }

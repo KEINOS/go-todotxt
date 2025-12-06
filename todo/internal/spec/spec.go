@@ -19,11 +19,17 @@ const (
 	PrefixProject Mark = '+'
 	// SepKeyValue is the separator for key-value pairs.
 	SepKeyValue Mark = ':'
+	// WrapPriorityOpen is the opening parenthesis for priority marks.
+	WrapPriorityOpen Mark = '('
+	// WrapPriorityClose is the closing parenthesis for priority marks.
+	WrapPriorityClose Mark = ')'
 )
 
 const (
 	// DateFormat is the standard date format in todo.txt (YYYY-MM-DD).
 	DateFormat = "2006-01-02"
+	// DateLen is the length of the date format string "YYYY-MM-DD".
+	DateLen = len(DateFormat) // 10
 	// InvalidMark is the zero value returned by Byte() for non-printable marks.
 	InvalidMark byte = 0x00
 	// InvalidRune is the zero value returned by Rune() for non-printable marks.
@@ -31,6 +37,8 @@ const (
 	// MaxTaskLength is the maximum allowed length for a task string. Equivalent
 	// to bufio.MaxScanTokenSize (64KB).
 	MaxTaskLength int = 64 * 1024 // 65536 bytes
+	// PriorityLen is the length of a priority mark, e.g., (A) = 3 characters.
+	PriorityLen int = 3 // e.g., (A)
 )
 
 // Mark is a single-byte marker character in the todo.txt format.

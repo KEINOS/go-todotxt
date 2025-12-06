@@ -97,33 +97,18 @@ func (s Segment) IsComment() bool {
 
 // IsDate returns true if the segment is a date in YYYY-MM-DD format.
 //
-// This method only checks the format, not if the date is valid.
+// This method only checks the format, not if the date is valid. For full
+// validation, use IsDateValid().
 func (s Segment) IsDate() bool {
-	// We do not use time.Parse here for performance reasons.
-	// This implementation is 7x faster than time.Parse in benchmarks.
-	const dateLen = 10 // "YYYY-MM-DD"
+	return spec.IsDate(string(s), false)
+}
 
-	if len(s) != dateLen {
-		return false
-	}
-
-	// Check format: YYYY-MM-DD
-	if s[4] != '-' || s[7] != '-' {
-		return false
-	}
-
-	// Check that all other characters are digits.
-	for i, ch := range s {
-		if i == 4 || i == 7 {
-			continue
-		}
-
-		if ch < '0' || ch > '9' {
-			return false
-		}
-	}
-
-	return true
+// IsDateValid returns true if the segment is a valid date in YYYY-MM-DD format
+// and is a valid calendar date.
+//
+// This is similar to IsDate but performs full validation and is 12x slower.
+func (s Segment) IsDateValid() bool {
+	return spec.IsDate(string(s), true)
 }
 
 // IsMarkCompletion returns true if the segment is a completion mark ("x").
