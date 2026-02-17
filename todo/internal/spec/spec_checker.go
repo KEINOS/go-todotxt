@@ -122,13 +122,7 @@ func ContainsInlineComment(text string) (int, bool) {
 // To exclude certain control characters from this check, provide them in the
 // 'allow' slice.
 func ContainsCtlChars(text string, allow []rune) bool {
-	isInAllowed := func(r rune) bool {
-		if len(allow) == 0 {
-			return false
-		}
-
-		return slices.Contains(allow, r)
-	}
+	searchAllow := len(allow) > 0
 
 	// traverse each character in the text
 	for _, char := range text {
@@ -139,7 +133,7 @@ func ContainsCtlChars(text string, allow []rune) bool {
 			continue
 		}
 
-		if isInAllowed(char) {
+		if searchAllow && slices.Contains(allow, char) {
 			continue
 		}
 

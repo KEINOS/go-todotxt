@@ -193,13 +193,13 @@ func ExampleContainsInlineComment() {
 			expectFound: true,
 		},
 		{
-			text: "Task w/\t# inline comment after tab",
-			// The index is byte-based; tab is a single byte
-			expectIndex: 8,
+			text:        "Task w/\t# inline comment after tab",
+			expectIndex: 8, // The index is byte-based; tab is a single byte
 			expectFound: true,
 		},
 		// False cases (no inline comment)
-		{text: "Task w/ +Project @Context with no comment",
+		{
+			text:        "Task w/ +Project @Context with no comment",
 			expectIndex: -1,
 			expectFound: false,
 		},
