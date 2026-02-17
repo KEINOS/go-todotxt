@@ -1,4 +1,4 @@
-package parse
+package todoparse
 
 import "github.com/KEINOS/go-todotxt/todo/internal/segment"
 

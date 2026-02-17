@@ -10,7 +10,7 @@ The shared `spec` package keeps todo.txt markers consistent across the stack.
 | :--: | :-- | :-- |
 | `spec/` | Shared todo.txt markers used across internal packages | |
 | `segment/` | Provides the `Segment` type plus predicate helpers | Segments are tokens split by spaces |
-| `parse/` | Tokenizes task strings and exposes read-only getters | |
+| `todoparse/` | Tokenizes task strings and exposes read-only getters | |
 | `task/` | Modifies task components while preserving original format | |
 
 ## Design Philosophy

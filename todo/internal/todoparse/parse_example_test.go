@@ -1,11 +1,11 @@
-package parse_test
+package todoparse_test
 
 import (
 	"encoding/json"
 	"fmt"
 	"log"
 
-	"github.com/KEINOS/go-todotxt/todo/internal/parse"
+	"github.com/KEINOS/go-todotxt/todo/internal/todoparse"
 )
 
 // ----------------------------------------------------------------------------
@@ -17,7 +17,7 @@ func ExampleFromTaskString() {
 	taskStr := "x (A) 2016-05-20 2016-05-18 Thank Mom for the meatballs " +
 		"+dinner @phone due:2016-05-25 # this is an inline-comment"
 
-	parsed, err := parse.FromTaskString(taskStr)
+	parsed, err := todoparse.FromTaskString(taskStr)
 	if err != nil {
 		log.Fatalf("failed to parse task string: %v", err)
 	}
@@ -59,8 +59,8 @@ func ExampleFromTaskString_with_options() {
 	taskStr := "x\t(A)\t2016-05-20\t2016-05-18\tThank Mom for the meatballs +dinner @phone due:2016-05-25 # comment"
 
 	// Allow tab control characters in the task string
-	parsed, err := parse.FromTaskString(taskStr,
-		parse.WithAllowedCtrlChars([]rune{'\t'}),
+	parsed, err := todoparse.FromTaskString(taskStr,
+		todoparse.WithAllowedCtrlChars([]rune{'\t'}),
 	)
 	if err != nil {
 		log.Fatalf("failed to parse task string: %v", err)
@@ -81,7 +81,7 @@ func ExampleFromTaskString_with_key_value_tags() {
 	// Task string with key-value tags
 	taskStr := "code review site url:https://example.com/#fragment due:2024-07-01 # important"
 
-	parsed, err := parse.FromTaskString(taskStr)
+	parsed, err := todoparse.FromTaskString(taskStr)
 	if err != nil {
 		log.Fatalf("failed to parse task string: %v", err)
 	}
@@ -107,7 +107,7 @@ func ExampleParsed_Parse() {
 	// Initial task string
 	taskStr := "Buy milk @store"
 
-	parsed, err := parse.FromTaskString(taskStr)
+	parsed, err := todoparse.FromTaskString(taskStr)
 	if err != nil {
 		log.Fatalf("failed to parse task string: %v", err)
 	}
@@ -119,7 +119,7 @@ func ExampleParsed_Parse() {
 
 	err = parsed.Parse(updatedTaskStr,
 		// Allow tab control character in the updated task string
-		parse.WithAllowedCtrlChars([]rune{'\t'}),
+		todoparse.WithAllowedCtrlChars([]rune{'\t'}),
 	)
 	if err != nil {
 		log.Fatalf("failed to re-parse updated task string: %v", err)
@@ -145,7 +145,7 @@ func ExampleParsed_Parse() {
 func ExampleParsed_segments_type_listing() {
 	taskStr := "x (A) 2016-05-20 Thank Mom for the meatballs +dinner @phone due:2016-05-25 # comment"
 
-	parsed, err := parse.FromTaskString(taskStr)
+	parsed, err := todoparse.FromTaskString(taskStr)
 	if err != nil {
 		log.Fatalf("failed to parse task string: %v", err)
 	}
@@ -198,7 +198,7 @@ func ExampleParsed_Components() {
 	// Parse a completed task with all components
 	taskStr := "x (A) 2016-05-20 2016-04-30 measure space for +chapelShelving @chapel due:2016-05-30 # comment"
 
-	parsed, err := parse.FromTaskString(taskStr)
+	parsed, err := todoparse.FromTaskString(taskStr)
 	if err != nil {
 		log.Fatalf("failed to parse task: %v", err)
 	}
@@ -233,7 +233,7 @@ func ExampleParsed_Components_simple() {
 	// Parse a simple task with minimal components
 	taskStr := "Buy milk @store"
 
-	parsed, err := parse.FromTaskString(taskStr)
+	parsed, err := todoparse.FromTaskString(taskStr)
 	if err != nil {
 		log.Fatalf("failed to parse task: %v", err)
 	}
@@ -254,7 +254,7 @@ func ExampleParsed_Components_commentLine() {
 	// Parse a comment line
 	taskStr := "# This is a comment"
 
-	parsed, err := parse.FromTaskString(taskStr)
+	parsed, err := todoparse.FromTaskString(taskStr)
 	if err != nil {
 		log.Fatalf("failed to parse task: %v", err)
 	}
@@ -277,7 +277,7 @@ func ExampleParsed_Components_commentLine() {
 
 func ExampleComponents_json() {
 	// Create a Components struct manually for demonstration
-	comp := parse.Components{
+	comp := todoparse.Components{
 		IsDone:           true,
 		IsCommentLine:    false,
 		HasInlineComment: true,
@@ -289,7 +289,7 @@ func ExampleComponents_json() {
 		Comment:          "# comment",
 		Contexts:         []string{"chapel"},
 		Projects:         []string{"chapelShelving"},
-		KeyValues:        []parse.KeyValue{{Key: "due", Value: "2016-05-30"}},
+		KeyValues:        []todoparse.KeyValue{{Key: "due", Value: "2016-05-30"}},
 	}
 
 	// Marshal to JSON with indentation
@@ -329,7 +329,7 @@ func ExampleComponents_json_minimal() {
 	// Minimal task with only required fields
 	//
 	//nolint:exhaustruct // allow missing fields for example
-	comp := parse.Components{
+	comp := todoparse.Components{
 		IsDone:        false,
 		IsCommentLine: false,
 		Description:   "Buy milk",

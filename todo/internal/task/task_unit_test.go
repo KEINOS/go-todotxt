@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/KEINOS/go-todotxt/todo/internal/parse"
+	"github.com/KEINOS/go-todotxt/todo/internal/todoparse"
 	"github.com/KEINOS/go-todotxt/todo/internal/spec"
 	"github.com/stretchr/testify/require"
 )
@@ -1125,7 +1125,7 @@ func TestWithDueDate_multiple_calls(t *testing.T) {
 		require.NoError(t, err)
 
 		require.Equal(t, "buy milk due:2024-12-25", tsk.String())
-		require.Equal(t, []parse.KeyValue{{Key: "due", Value: "2024-12-25"}}, tsk.KeyValues())
+		require.Equal(t, []todoparse.KeyValue{{Key: "due", Value: "2024-12-25"}}, tsk.KeyValues())
 	})
 
 	t.Run("multiple WithDueDate across separate Apply calls", func(t *testing.T) {
@@ -1148,7 +1148,7 @@ func TestWithDueDate_multiple_calls(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, "buy milk due:2024-12-25", tsk.String())
-		require.Equal(t, []parse.KeyValue{{Key: "due", Value: "2024-12-25"}}, tsk.KeyValues())
+		require.Equal(t, []todoparse.KeyValue{{Key: "due", Value: "2024-12-25"}}, tsk.KeyValues())
 	})
 
 	t.Run("WithDueDate during New then update via Apply", func(t *testing.T) {
@@ -1202,7 +1202,7 @@ func TestWithoutDueDate(t *testing.T) {
 		require.NoError(t, err)
 
 		require.Equal(t, "buy milk due:2024-12-25", tsk.String())
-		require.Equal(t, []parse.KeyValue{{Key: "due", Value: "2024-12-25"}}, tsk.KeyValues())
+		require.Equal(t, []todoparse.KeyValue{{Key: "due", Value: "2024-12-25"}}, tsk.KeyValues())
 	})
 }
 
@@ -1865,7 +1865,7 @@ func TestSetTag_duplicate_keys(t *testing.T) {
 		require.NoError(t, err)
 
 		// KeyValues() returns all key-value pairs preserving order and duplicates
-		expect := []parse.KeyValue{
+		expect := []todoparse.KeyValue{
 			{Key: "due", Value: "2024-11-01"},
 			{Key: "due", Value: "2024-12-01"},
 		}
@@ -1884,7 +1884,7 @@ func TestSetTag_duplicate_keys(t *testing.T) {
 		// Current behavior: only the first "due" is updated
 		require.Equal(t, "buy milk due:2025-01-01 due:2024-12-01", tsk.String())
 
-		expect := []parse.KeyValue{
+		expect := []todoparse.KeyValue{
 			{Key: "due", Value: "2025-01-01"},
 			{Key: "due", Value: "2024-12-01"},
 		}
@@ -1903,7 +1903,7 @@ func TestSetTag_duplicate_keys(t *testing.T) {
 		// Current behavior: only the first "due" is removed
 		require.Equal(t, "buy milk due:2024-12-01", tsk.String())
 
-		expect := []parse.KeyValue{
+		expect := []todoparse.KeyValue{
 			{Key: "due", Value: "2024-12-01"},
 		}
 		require.Equal(t, expect, tsk.KeyValues())
@@ -1916,7 +1916,7 @@ func TestSetTag_duplicate_keys(t *testing.T) {
 		require.NoError(t, err)
 
 		// KeyValues returns all values preserving order and duplicates
-		expect := []parse.KeyValue{
+		expect := []todoparse.KeyValue{
 			{Key: "url", Value: "http://a.com"},
 			{Key: "url", Value: "http://b.com"},
 			{Key: "tag", Value: "foo"},

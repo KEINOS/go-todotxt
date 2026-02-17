@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/KEINOS/go-todotxt/todo/internal/parse"
+	"github.com/KEINOS/go-todotxt/todo/internal/todoparse"
 )
 
 // Various valid task strings for benchmarking.
@@ -36,14 +36,14 @@ func BenchmarkNew(b *testing.B) {
 	}
 }
 
-// Benchmark to compare task.New vs parse.FromTaskString to see the overhead difference.
+// Benchmark to compare task.New vs todoparse.FromTaskString to see the overhead difference.
 func Benchmark_task_vs_parse(b *testing.B) {
 	for index, taskStr := range dataValidTasks {
 		title := fmt.Sprintf("Task #%d", index+1)
 
-		b.Run("[parse.FromTaskString]: "+title, func(b *testing.B) {
+		b.Run("[todoparse.FromTaskString]: "+title, func(b *testing.B) {
 			for range b.N {
-				_, _ = parse.FromTaskString(taskStr)
+				_, _ = todoparse.FromTaskString(taskStr)
 			}
 		})
 

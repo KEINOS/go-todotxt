@@ -3,7 +3,7 @@
 `task` lets you edit todo.txt strings without losing their original spacing or
 tag order.
 
-It wraps a `Parsed` instance of [`parse` package](../parse/) and keeps the raw task text as the source of
+It wraps a `Parsed` instance of [`todoparse` package](../todoparse/) and keeps the raw task text as the source of
 truth until you choose to re-parse it.
 
 ## Constructor
@@ -12,7 +12,7 @@ truth until you choose to re-parse it.
 New(taskString string, opts ...Option) (*Task, error)
 ```
 
-- Parses the input string with `parse.FromTaskString`.
+- Parses the input string with `todoparse.FromTaskString`.
 - Applies optional modifiers if provided (for example, `WithPriority("A")`).
 - Calls `Apply()` to sync the parsed data with any modifications.
 
@@ -54,9 +54,9 @@ returns the wrapped error.
 Most mutators mark the task dirty by updating the raw text. Call `Apply()` after
 batching your edits to refresh the parsed view.
 
-## Relationship With `parse` Package
+## Relationship With `todoparse` Package
 
-`task.Task` embeds `*parse.Parsed` to reuse the getters while keeping the raw
+`task.Task` embeds `*todoparse.Parsed` to reuse the getters while keeping the raw
 text (`originalText`) as the single source of truth.
 
 ```text
@@ -87,7 +87,7 @@ Task.String() ─────────────► Raw text (originalText)
 
 ## When to Use Which Package
 
-- just need to read data → call `parse.FromTaskString`
+- just need to read data → call `todoparse.FromTaskString`
 - need to edit the text but keep spacing → call `task.New`, use the helper
     methods, then `Apply()`
 

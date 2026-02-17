@@ -1,6 +1,6 @@
 # Package Overview
 
-`parse` gives read-only access to todo.txt task strings.
+`todoparse` gives read-only access to todo.txt task strings.
 
 It reads the raw text, splits it into `segment.Segments`, memoizes only the
 expensive lookups (inline comments, comment/done flags, header skip indexes,

@@ -1,7 +1,7 @@
 package task
 
 import (
-	"github.com/KEINOS/go-todotxt/todo/internal/parse"
+	"github.com/KEINOS/go-todotxt/todo/internal/todoparse"
 )
 
 // Option is a functional option for configuring or modifying a Task.
@@ -18,7 +18,7 @@ type Option func(*Task) error
 func WithAllowedCtrlChars(allowedCtrlChars []rune) Option {
 	return func(t *Task) error {
 		if t.Parsed == nil { // pre-parse phase
-			t.parseOpts = append(t.parseOpts, parse.WithAllowedCtrlChars(allowedCtrlChars))
+			t.parseOpts = append(t.parseOpts, todoparse.WithAllowedCtrlChars(allowedCtrlChars))
 		} else {
 			t.AllowCtrlChars(allowedCtrlChars)
 		}

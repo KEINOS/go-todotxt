@@ -1,10 +1,10 @@
 /*
-Package parse provides read-only parsing of todo.txt task strings.
+Package todoparse provides read-only parsing of todo.txt task strings.
 
 It extracts structured information from a task string.
 For modifying tasks, use the "task" package.
 */
-package parse
+package todoparse
 
 import (
 	"slices"

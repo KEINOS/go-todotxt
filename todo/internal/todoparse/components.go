@@ -1,4 +1,4 @@
-package parse
+package todoparse
 
 // Components represents all parsed components from a todo.txt task string.
 //

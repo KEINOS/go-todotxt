@@ -1,4 +1,4 @@
-package parse
+package todoparse
 
 // Option defines a functional option for configuring behavior of Parsed.
 type Option func(*Parsed)

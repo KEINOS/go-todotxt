@@ -2,11 +2,11 @@
 Package task provides methods to edit todo.txt strings while preserving their
 original formatting.
 
-It uses the "parse" package for reading task data and provides methods to
+It uses the "todoparse" package for reading task data and provides methods to
 modify priorities, tags, dates, and comments. Changes are applied only when
 Apply() is called.
 
-For read-only operations, and no modifications are needed, use the "parse"
+For read-only operations, and no modifications are needed, use the "todoparse"
 package instead.
 */
 package task
@@ -16,7 +16,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/KEINOS/go-todotxt/todo/internal/parse"
+	"github.com/KEINOS/go-todotxt/todo/internal/todoparse"
 	"github.com/KEINOS/go-todotxt/todo/internal/spec"
 )
 
@@ -30,10 +30,10 @@ import (
 // Changes are deferred until Apply() is called. This method re-parses the
 // modified string to update the task's structured data.
 type Task struct {
-	*parse.Parsed // Delegates read-only methods to Parsed.
+	*todoparse.Parsed // Delegates read-only methods to Parsed.
 
-	parseOpts []parse.Option // Options for re-parsing via parse.Parsed.Parse()
-	isDirty   bool           // True if the task string has been modified.
+	parseOpts []todoparse.Option // Options for re-parsing via todoparse.Parsed.Parse()
+	isDirty   bool                // True if the task string has been modified.
 }
 
 // TimeNow is a variable holding time.Now for testing purposes.
@@ -67,7 +67,7 @@ func New(taskString string, opts ...Option) (*Task, error) {
 	}
 
 	// 2. Parse the initial task string.
-	parsed, err := parse.FromTaskString(taskString, newTask.parseOpts...)
+	parsed, err := todoparse.FromTaskString(taskString, newTask.parseOpts...)
 	if err != nil {
 		return nil, wrapError(err, "failed to create new task")
 	}

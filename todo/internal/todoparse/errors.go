@@ -1,5 +1,5 @@
 //nolint:varnamelen // allow short name for simplicity
-package parse
+package todoparse
 
 import (
 	"errors"

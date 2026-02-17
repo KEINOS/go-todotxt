@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/KEINOS/go-todotxt/todo/internal/parse"
+	"github.com/KEINOS/go-todotxt/todo/internal/todoparse"
 	"github.com/KEINOS/go-todotxt/todo/internal/spec"
 	"github.com/stretchr/testify/require"
 )
@@ -1003,7 +1003,7 @@ var dataWithKeyValue = []struct {
 	key         string
 	value       string
 	expectOut   string           // task.String() on success
-	expectKV    []parse.KeyValue // expected key-values after operation
+	expectKV    []todoparse.KeyValue // expected key-values after operation
 	errContains string           // error message to contain on failure
 	shouldError bool
 }{
@@ -1014,7 +1014,7 @@ var dataWithKeyValue = []struct {
 		key:         "due",
 		value:       "2024-12-25",
 		expectOut:   "buy milk due:2024-12-25",
-		expectKV:    []parse.KeyValue{{Key: "due", Value: "2024-12-25"}},
+		expectKV:    []todoparse.KeyValue{{Key: "due", Value: "2024-12-25"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1024,7 +1024,7 @@ var dataWithKeyValue = []struct {
 		key:         "priority",
 		value:       "high",
 		expectOut:   "buy milk @store +shopping priority:high",
-		expectKV:    []parse.KeyValue{{Key: "priority", Value: "high"}},
+		expectKV:    []todoparse.KeyValue{{Key: "priority", Value: "high"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1034,7 +1034,7 @@ var dataWithKeyValue = []struct {
 		key:         "due",
 		value:       "2024-12-25",
 		expectOut:   "buy milk due:2024-12-25",
-		expectKV:    []parse.KeyValue{{Key: "due", Value: "2024-12-25"}},
+		expectKV:    []todoparse.KeyValue{{Key: "due", Value: "2024-12-25"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1044,7 +1044,7 @@ var dataWithKeyValue = []struct {
 		key:         "priority",
 		value:       "high",
 		expectOut:   "buy milk due:2024-12-25 priority:high",
-		expectKV:    []parse.KeyValue{{Key: "due", Value: "2024-12-25"}, {Key: "priority", Value: "high"}},
+		expectKV:    []todoparse.KeyValue{{Key: "due", Value: "2024-12-25"}, {Key: "priority", Value: "high"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1055,7 +1055,7 @@ var dataWithKeyValue = []struct {
 		key:         "url",
 		value:       "https://example.com",
 		expectOut:   "check website url:https://example.com",
-		expectKV:    []parse.KeyValue{{Key: "url", Value: "https://example.com"}},
+		expectKV:    []todoparse.KeyValue{{Key: "url", Value: "https://example.com"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1065,7 +1065,7 @@ var dataWithKeyValue = []struct {
 		key:         "reps",
 		value:       "30",
 		expectOut:   "exercise routine reps:30",
-		expectKV:    []parse.KeyValue{{Key: "reps", Value: "30"}},
+		expectKV:    []todoparse.KeyValue{{Key: "reps", Value: "30"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1075,7 +1075,7 @@ var dataWithKeyValue = []struct {
 		key:         "time",
 		value:       "14:30",
 		expectOut:   "meeting time:14:30",
-		expectKV:    []parse.KeyValue{{Key: "time", Value: "14:30"}},
+		expectKV:    []todoparse.KeyValue{{Key: "time", Value: "14:30"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1086,7 +1086,7 @@ var dataWithKeyValue = []struct {
 		key:         "due",
 		value:       "2024-01-10",
 		expectOut:   "x 2024-01-15 buy milk due:2024-01-10",
-		expectKV:    []parse.KeyValue{{Key: "due", Value: "2024-01-10"}},
+		expectKV:    []todoparse.KeyValue{{Key: "due", Value: "2024-01-10"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1096,7 +1096,7 @@ var dataWithKeyValue = []struct {
 		key:         "due",
 		value:       "2024-12-25",
 		expectOut:   "(A) buy milk due:2024-12-25",
-		expectKV:    []parse.KeyValue{{Key: "due", Value: "2024-12-25"}},
+		expectKV:    []todoparse.KeyValue{{Key: "due", Value: "2024-12-25"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1106,7 +1106,7 @@ var dataWithKeyValue = []struct {
 		key:         "due",
 		value:       "2024-12-25",
 		expectOut:   "buy milk due:2024-12-25 # shopping list",
-		expectKV:    []parse.KeyValue{{Key: "due", Value: "2024-12-25"}},
+		expectKV:    []todoparse.KeyValue{{Key: "due", Value: "2024-12-25"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1116,7 +1116,7 @@ var dataWithKeyValue = []struct {
 		key:         "due",
 		value:       "2024-12-25",
 		expectOut:   "buy milk @store due:2024-12-25 +shopping",
-		expectKV:    []parse.KeyValue{{Key: "due", Value: "2024-12-25"}},
+		expectKV:    []todoparse.KeyValue{{Key: "due", Value: "2024-12-25"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1127,7 +1127,7 @@ var dataWithKeyValue = []struct {
 		key:         "  due  ",
 		value:       "2024-12-25",
 		expectOut:   "buy milk due:2024-12-25",
-		expectKV:    []parse.KeyValue{{Key: "due", Value: "2024-12-25"}},
+		expectKV:    []todoparse.KeyValue{{Key: "due", Value: "2024-12-25"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1137,7 +1137,7 @@ var dataWithKeyValue = []struct {
 		key:         "due",
 		value:       "  2024-12-25  ",
 		expectOut:   "buy milk due:2024-12-25",
-		expectKV:    []parse.KeyValue{{Key: "due", Value: "2024-12-25"}},
+		expectKV:    []todoparse.KeyValue{{Key: "due", Value: "2024-12-25"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1159,7 +1159,7 @@ var dataWithKeyValue = []struct {
 		key:         "截止日期",
 		value:       "2024-12-25",
 		expectOut:   "买牛奶 截止日期:2024-12-25",
-		expectKV:    []parse.KeyValue{{Key: "截止日期", Value: "2024-12-25"}},
+		expectKV:    []todoparse.KeyValue{{Key: "截止日期", Value: "2024-12-25"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1169,7 +1169,7 @@ var dataWithKeyValue = []struct {
 		key:         "期限",
 		value:       "2024-12-25",
 		expectOut:   "牛乳を買う 期限:2024-12-25",
-		expectKV:    []parse.KeyValue{{Key: "期限", Value: "2024-12-25"}},
+		expectKV:    []todoparse.KeyValue{{Key: "期限", Value: "2024-12-25"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1179,7 +1179,7 @@ var dataWithKeyValue = []struct {
 		key:         "마감일",
 		value:       "2024-12-25",
 		expectOut:   "우유 사기 마감일:2024-12-25",
-		expectKV:    []parse.KeyValue{{Key: "마감일", Value: "2024-12-25"}},
+		expectKV:    []todoparse.KeyValue{{Key: "마감일", Value: "2024-12-25"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1277,7 +1277,7 @@ var dataWithoutKeyValue = []struct {
 	taskStr     string
 	key         string
 	expectOut   string           // task.String() on success
-	expectKV    []parse.KeyValue // expected key-values after operation
+	expectKV    []todoparse.KeyValue // expected key-values after operation
 	errContains string           // error message to contain on failure
 	shouldError bool
 }{
@@ -1296,7 +1296,7 @@ var dataWithoutKeyValue = []struct {
 		taskStr:     "buy milk due:2024-12-25 priority:high",
 		key:         "due",
 		expectOut:   "buy milk priority:high",
-		expectKV:    []parse.KeyValue{{Key: "priority", Value: "high"}},
+		expectKV:    []todoparse.KeyValue{{Key: "priority", Value: "high"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1315,7 +1315,7 @@ var dataWithoutKeyValue = []struct {
 		taskStr:     "buy milk due:2024-12-25",
 		key:         "priority",
 		expectOut:   "buy milk due:2024-12-25",
-		expectKV:    []parse.KeyValue{{Key: "due", Value: "2024-12-25"}},
+		expectKV:    []todoparse.KeyValue{{Key: "due", Value: "2024-12-25"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1391,7 +1391,7 @@ var dataWithoutKeyValue = []struct {
 		taskStr:     "watch overdue:2024-01-01 movies",
 		key:         "due",
 		expectOut:   "watch overdue:2024-01-01 movies",
-		expectKV:    []parse.KeyValue{{Key: "overdue", Value: "2024-01-01"}},
+		expectKV:    []todoparse.KeyValue{{Key: "overdue", Value: "2024-01-01"}},
 		errContains: "",
 		shouldError: false,
 	},
@@ -1400,7 +1400,7 @@ var dataWithoutKeyValue = []struct {
 		taskStr:     "task due:2024-01-01 dueDate:2024-02-01",
 		key:         "due",
 		expectOut:   "task dueDate:2024-02-01",
-		expectKV:    []parse.KeyValue{{Key: "dueDate", Value: "2024-02-01"}},
+		expectKV:    []todoparse.KeyValue{{Key: "dueDate", Value: "2024-02-01"}},
 		errContains: "",
 		shouldError: false,
 	},

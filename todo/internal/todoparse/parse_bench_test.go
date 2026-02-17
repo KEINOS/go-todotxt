@@ -1,4 +1,4 @@
-package parse
+package todoparse
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 func BenchmarkFromTaskString(b *testing.B) {
 	// goos: darwin
 	// goarch: arm64
-	// pkg: github.com/KEINOS/go-todotxt/todo/internal/parse
+	// pkg: github.com/KEINOS/go-todotxt/todo/internal/todoparse
 	// cpu: Apple M4
 	// 4,084,708 ops/sec, 295.8 ns/op, 368 B/op, 3 allocs/op
 	for _, testStr := range dataValidVarious {
@@ -32,7 +32,7 @@ func BenchmarkParsed_reuse_parsed_segments(b *testing.B) {
 
 	// goos: darwin
 	// goarch: arm64
-	// pkg: github.com/KEINOS/go-todotxt/todo/internal/parse
+	// pkg: github.com/KEINOS/go-todotxt/todo/internal/todoparse
 	// cpu: Apple M4
 	// 12,493,983 ops/sec, 96.13 ns/op, 32 B/op, 2 allocs/op
 	for range b.N {
