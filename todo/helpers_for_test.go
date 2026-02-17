@@ -27,7 +27,7 @@ const (
 	testExpectedOutput                  = "testdata/expected_todo.txt"
 )
 
-var _ = func() interface{} {
+var _ = func() any {
 	RemoveCompletedPriority = false
 
 	return nil

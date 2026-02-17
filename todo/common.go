@@ -243,7 +243,6 @@ func parsePriority(txtOrig string, task *Task) {
 
 // parseTime parses a string as a local time into a time.Time struct.
 func parseTime(s string) (time.Time, error) {
-	//nolint:gosmopolitan //
 	parsed, err := time.ParseInLocation(DateLayout, s, time.Local)
 	if err != nil {
 		return time.Time{}, errors.Wrap(err, "failed to parse time")

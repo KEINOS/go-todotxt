@@ -7,6 +7,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// ----------------------------------------------------------------------------
+//  Helpers
+// ----------------------------------------------------------------------------
+
 // fakeClock is a test helper that implements the Clock interface.
 type fakeClock struct {
 	now time.Time
