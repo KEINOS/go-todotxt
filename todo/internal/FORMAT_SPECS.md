@@ -6,13 +6,15 @@
 
 ## Table of Contents
 
-- [Sample](#sample-task-string)
+- [Sample Task String](#sample-task-string)
 - [Overview](#overview)
-- [Incomplete Tasks](#incomplete-tasks-3-format-rules)
-- [Complete Tasks](#complete-tasks-2-format-rules)
-- [Additional Metadata](#additional-file-format-definitions)
-- [Comments](#comments)
+- [Incomplete Tasks: 3 Format Rules](#incomplete-tasks-3-format-rules)
+- [Complete Tasks: 2 Format Rules](#complete-tasks-2-format-rules)
+- [Additional File Format Definitions](#additional-file-format-definitions)
 - [Components](#components)
+- [Extended Rules](#extended-rules)
+  - [Comments](#comments)
+  - [Task Length Limit](#task-length-limit)
 
 ## Sample Task String
 
@@ -34,14 +36,14 @@ Post signs around the neighborhood +GarageSale
 - Completion: `x` (lowercase) followed by space.
 - Priority: `(A-Z)` in parentheses. Uppercase letters only.
 - Dates: `YYYY-MM-DD`.
-- Projects: `+` + non-whitespace.
-- Contexts: `@` + non-whitespace.
-- Metadata: `key:value`.
+- Projects: whitespace + `+` + non-whitespace.
+- Contexts: whitespace + `@` + non-whitespace.
+- Metadata: whitespace + `key:value`.
 - **Extended Rules of this package:**
   - Lines starting with `#` are treated as comments (see [Comments](#comments)).
   - Any text after "#" with any Unicode space character are treated as inline comment.
   - Unless explicitly allowed, control characters are not permitted.
-  - Each task line should not be longer than 64 * 1024 Bytes (64KB. Default size of bufio.MaxScanTokenSize).
+  - Each task line should not be longer than 8192 Bytes (8KB).
 
 ## Incomplete Tasks: 3 Format Rules
 
@@ -74,20 +76,9 @@ Optional `YYYY-MM-DD` directly after priority/space, or first if no priority. Lo
 
 Use `key:value` for extra metadata, e.g., `due:2010-01-02`.
 
-## Comments
-
-**Note:** Comments are an extension to the original todo.txt format specification and are not part of the [official standard](https://github.com/todotxt/todo.txt?tab=readme-ov-file).
-
-This package treats lines or segments starting with `#` as comments by default:
-
-- **Comment line**: A line beginning with `#` is treated as a comment and ignored during task processing.
-  - Example: `# This is a comment line`
-- **Inline comment**: Text following `#` within a task line is treated as a comment.
-  - Example: `(A) Buy milk @store # Don't forget the organic one`
-
-Comment lines and inline comments are preserved when reading/writing todo.txt files, but are not parsed as task components.
-
 ## Components
+
+Components are the elements that make up a todo.txt task line.
 
 | Component | Description | Optional | Example |
 | :--: | :-- | :--: | :-- |
@@ -104,3 +95,46 @@ Comment lines and inline comments are preserved when reading/writing todo.txt fi
 | `+project` | Project/Category | `+chapelShelving` |
 | `@context` | Context (Like hash-tags) | `@chapel` |
 | `key:value` | Custom metadata | `due:2016-05-30`<br>`location:office` |
+
+## Extended Rules
+
+Extended rules that are not part of the [official standard](https://github.com/todotxt/todo.txt?tab=readme-ov-file) but are defined in this package.
+
+### Comments
+
+This package treats lines or segments starting with `#` as comments by default:
+
+- **Comment line**: A line beginning with `#` is treated as a comment and ignored during task processing.
+  - Example: `# This is a comment line`
+- **Inline comment**: Text following `#` within a task line is treated as a comment.
+  - Example: `(A) Buy milk @store # Don't forget the organic one`
+- **Not a comment**: If `#` appears in the middle of a word or tag and has no leading whitespace, it is not treated as a comment.
+  - Example: `fix Issue#123 in the codebase`
+
+### Task Length Limit
+
+This package restricts the maximum length of each task line to 8KB (8,192 Bytes).
+
+| Encoding Type | Max Characters | Max Length (Bytes) |
+| :--- | :--- | :--- |
+| ASCII | around 8,000 characters | 8,000 Bytes |
+| Multi-byte UTF-8 | around 2,700 characters | 8,100 Bytes |
+| Emoji mixed | around 2,000 - 4,000 characters | 8,000 Bytes |
+
+Since todo.txt is primarily designed for plain text tasks, being portable and lightweight is essential.
+
+Based on the below common platform limits and i18n considerations, we've chosen 8KB is a reasonable limit.
+
+| System / Platform | Typical Line Length Limit |
+| :--- | :--- |
+| Recommended Email subject line | 78 characters |
+| RFC 5322 (2.1.1, IMF Line Length Limit) | 998 characters |
+| Common Japanese paragraph length | 200-400 characters |
+| Twitter/X | 280 characters |
+| Git commit message | 72 characters/line |
+| GitHub issue title | 256 characters |
+| GitHub issue body | ~65,000 characters |
+| Jira task title | 255 characters |
+| Todoist task | 500 characters |
+| Google Keep note | ~20,000 characters |
+| Markdown paragraph | ~1,000 characters |
